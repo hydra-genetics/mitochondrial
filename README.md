@@ -30,8 +30,8 @@ In order to use this module, the following dependencies are required:
 
 ### Sample data
 
-Input data should be added to [`samples.tsv`](https://github.com/hydra-genetics/mito_snv_indels/blob/develop/config/samples.tsv)
-and [`units.tsv`](https://github.com/hydra-genetics/mito_snv_indels/blob/develop/config/units.tsv).
+Input data should be added to [`samples.tsv`](https://github.com/hydra-genetics/mitochondrial/blob/develop/config/samples.tsv)
+and [`units.tsv`](https://github.com/hydra-genetics/mitochondrial/blob/develop/config/units.tsv).
 The following information need to be added to these files:
 
 | Column Id | Description |
@@ -76,7 +76,7 @@ module prealignment:
         config
 
 
-use rule * from mito_snv_indels as mito_snv_indels_*
+use rule * from mitochondrial as mitochondrial_*
 ```
 
 ### Output files
@@ -85,6 +85,6 @@ The following output files should be targeted via another rule:
 
 | File | Description |
 |---|---|
-| `mito_snv_indels/PATH/FILE` | DESCRIPTION |
+| `mitochondrial/PATH/FILE` | DESCRIPTION |
 
 ## :judge: Rule Graph
