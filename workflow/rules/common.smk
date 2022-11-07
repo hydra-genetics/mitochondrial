@@ -43,8 +43,21 @@ wildcard_constraints:
 
 
 def compile_output_list(wildcards):
-    return [
-        "mito_snv_indels/dummy/%s_%s.dummy.txt" % (sample, t)
+
+    files = {
+        "mito_snv_indels/gatk_merge_bam_alignment": [
+            "bam"
+        ]
+    }
+
+    
+    output_files = [
+        "%s/%s_%s.%s" % (prefix, sample, unit_type, suffix)
+        for prefix in files.keys()
         for sample in get_samples(samples)
-        for t in get_unit_types(units, sample)
+        for unit_type in get_unit_types(units, sample)
+        for suffix in files[prefix]
     ]
+
+    
+    return output_files
