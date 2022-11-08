@@ -10,6 +10,7 @@ from snakemake.utils import min_version
 from hydra_genetics.utils.resources import load_resources
 from hydra_genetics.utils.samples import *
 from hydra_genetics.utils.units import *
+from pysam import AlignmentFile
 
 min_version("6.8.0")
 
@@ -42,20 +43,34 @@ wildcard_constraints:
     type="N|T|R",
 
 
+def get_pg_info(bam):
+
+    bamfile = AlignmentFile(bam, 'rb')
+    pg_header = bamfile.header['PG']
+
+    for d in pg_header:
+        if d['ID'] == 'bwa':
+            version = d['VN']
+            bwa_cmd_line = d['CL']
+
+    return(version, bwa_cmd_line)
+
+
 def compile_output_list(wildcards):
 
     files = {
-        "mito_snv_indels/gatk_merge_bam_alignment": [
+        "mitochondrial/gatk_sort_sam": [
             "bam"
         ]
     }
 
     
     output_files = [
-        "%s/%s_%s.%s" % (prefix, sample, unit_type, suffix)
+        "%s/%s_%s_%s.%s" % (prefix, sample, unit_type, ref, suffix)
         for prefix in files.keys()
         for sample in get_samples(samples)
         for unit_type in get_unit_types(units, sample)
+        for ref in ['mt', 'mt_shifted']
         for suffix in files[prefix]
     ]
 
