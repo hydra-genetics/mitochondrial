@@ -262,7 +262,7 @@ rule gatk_sort_sam:
         "-CREATE_INDEX true "
         "-MAX_RECORDS_IN_RAM 300000) &> {log}"
 
-
+## Collect coverage metrics for MT and for the autosomes 
 
 rule gatk_collect_wgs_metrics:
     input:
@@ -339,3 +339,50 @@ rule gatk_extract_average_coverage:
         "{rule}: Extract the mean and median coverage from {input.metrics}"
     script:
         "../scripts/gatk_extract_average_coverage.py"
+
+
+# Call MT variants with mutect2
+
+rule gatk_mutect2:
+    input:
+        bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
+        ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, ""),
+    output:
+        vcf=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf"),
+    params:
+        extra=config.get("gatk_mutect2", {}).get("extra", ""),
+        interval=lambda wildcards: config.get("gatk_mutect2", {}).get("interval", {}).get(wildcards.mt_ref, ""),
+        max_reads_per_alignment_start=config.get("gatk_mutect2", {}).get("max_reads_per_alignment_start", 75),
+    log:
+        "mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.benchmark.tsv",
+            config.get("gatk_mutect2", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_mutect2", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_mutect2", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_mutect2", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_mutect2", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_mutect2", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_mutect2", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_mutect2", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Call mitochondrial variants using Mutect2 on {input.bam}"
+    shell:
+        "(gatk --java-options '-Xmx3g' Mutect2 "
+        "-R {input.ref} "
+        "-I {input.bam} "
+        "--read-filter MateOnSameContigOrNoMappedMateReadFilter "
+        "--read-filter MateUnmappedAndUnmappedReadFilter "
+        "-O {output.vcf} "
+        "-L {params.interval} "
+        "--annotation StrandBiasBySample "
+        "--mitochondria-mode "
+        "--max-reads-per-alignment-start {params.max_reads_per_alignment_start} "
+        "--max-mnp-distance 0) &> {log}"
+

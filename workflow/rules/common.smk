@@ -64,10 +64,13 @@ def compile_output_list(wildcards):
         ],
         "mitochondrial/gatk_collect_wgs_metrics": [
             "metrics.txt", "theoretical_sensitivity.txt", "mean_coverage.txt", "median_coverage.txt",
-        ]
+        ],
+        "mitochondrial/gatk_mutect2": [
+            "vcf"
+        ],
+
     }
 
-    
     output_files = [
         "%s/%s_%s_%s.%s" % (prefix, sample, unit_type, ref, suffix)
         for prefix in files.keys()
