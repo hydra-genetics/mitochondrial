@@ -61,6 +61,9 @@ def compile_output_list(wildcards):
     files = {
         "mitochondrial/gatk_sort_sam": [
             "bam"
+        ],
+        "mitochondrial/gatk_collect_wgs_metrics": [
+            "metrics.txt", "theoretical_sensitivity.txt", "mean_coverage.txt", "median_coverage.txt",
         ]
     }
 

@@ -262,3 +262,80 @@ rule gatk_sort_sam:
         "-CREATE_INDEX true "
         "-MAX_RECORDS_IN_RAM 300000) &> {log}"
 
+
+
+rule gatk_collect_wgs_metrics:
+    input:
+        bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
+        ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
+    output:
+        metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
+        t_sensitivity="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.theoretical_sensitivity.txt"
+    params:
+        coverage_cap=config.get("gatk_collect_wgs_metrics").get("coverage_cap", ""),
+        extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
+        read_length=config.get("gatk_collect_wgs_metrics").get("read_length"),
+    log:
+        "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt.benchmark.tsv",
+            config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_collect_wgs_metrics", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_collect_wgs_metrics", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_collect_wgs_metrics", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_collect_wgs_metrics", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_collect_wgs_metrics", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Collect coverage and performance metrics for {input.bam} using the gatk4 wrapper of Picard's CollectWgsMetrics"
+    shell:
+        "(gatk --java-options '-Xmx2g' CollectWgsMetrics "
+        "-INPUT {input.bam} "
+        "-VALIDATION_STRINGENCY SILENT "
+        "-REFERENCE_SEQUENCE {input.ref} "
+        "-OUTPUT {output.metrics} "
+        "-USE_FAST_ALGORITHM true "
+        "-READ_LENGTH {params.read_length} "
+        "-COVERAGE_CAP  {params.coverage_cap} "
+        "-INCLUDE_BQ_HISTOGRAM true "
+        "-THEORETICAL_SENSITIVITY_OUTPUT {output.t_sensitivity}) &> {log}"
+        
+
+
+rule gatk_extract_average_coverage:
+    input:
+        metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
+    output:
+        mean="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.mean_coverage.txt",
+        median="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.median_coverage.txt"
+    params:
+        extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.coverage.txt.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.output.benchmark.tsv",
+            config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_collect_wgs_metrics", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_collect_wgs_metrics", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_collect_wgs_metrics", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_collect_wgs_metrics", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_extract_average_coverage", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Extract the mean and median coverage from {input.metrics}"
+    script:
+        "../scripts/gatk_extract_average_coverage.py"
