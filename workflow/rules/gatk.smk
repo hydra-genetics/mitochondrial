@@ -386,3 +386,79 @@ rule gatk_mutect2:
         "--max-reads-per-alignment-start {params.max_reads_per_alignment_start} "
         "--max-mnp-distance 0) &> {log}"
 
+
+
+rule gatk_lift_over_vcf:
+    input:
+        shifted_vcf="mitochondrial/gatk_mutect2/{sample}_{type}_mt_shifted.vcf",
+        ref=config.get("mt_reference", {}).get("mt", ""),
+        shift_back_chain=config.get("gatk_lift_over_vcf", {}).get("shift_back_chain", ""),
+    output:
+        shifted_back_vcf=temp("mitochondrial/gatk_lift_over_vcf/{sample}_{type}.shifted_back.vcf"),
+        reject=temp("mitochondrial/gatk_lift_over_vcf/{sample}_{type}.reject.vcf"),
+    params:
+        extra=config.get("gatk_lift_over_vcf", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.output.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.output.benchmark.tsv",
+            config.get("gatk_lift_over_vcf", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_lift_over_vcf", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_lift_over_vcf", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_lift_over_vcf", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_lift_over_vcf", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_lift_over_vcf", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_lift_over_vcf", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_lift_over_vcf", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Lift over shifted {input.shifted_vcf} using chain file to the original unshifted fasta reference {input.ref}"
+    shell:
+        "(gatk --java-options '-Xmx3g' LiftoverVcf "
+        "-I {input.shifted_vcf} "
+        "-O {output.shifted_back_vcf} "
+        "-R {input.ref} "
+        "--CHAIN {input.shift_back_chain} "
+        "--REJECT {output.reject}) &> {log} "
+
+
+rule gatk_merge_vcfs:
+    input:
+        shifted_vcf="mitochondrial/gatk_lift_over_vcf/{sample}_{type}.shifted_back.vcf",
+        vcf="mitochondrial/gatk_mutect2/{sample}_{type}_mt.vcf",
+    output:
+        vcf=temp("mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf"),
+    params:
+        extra=config.get("gatk_merge_vcfs", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_merge_vcfs", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_merge_vcfs", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_merge_vcfs", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_merge_vcfs", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_merge_vcfs", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_merge_vcfs", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_merge_vcfs", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_merge_vcfs", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        """"{rule}: Combine the VCF for the shifted back control region {input.shifted_vcf}
+        with the VCF for the rest of chrM {input.vcf}"""
+    shell:
+        "(gatk --java-options '-Xmx3g' MergeVcfs "
+        "-I {input.shifted_vcf} "
+        "-I {input.vcf} "
+        "-O {output.vcf}) &> {log}"
+

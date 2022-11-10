@@ -58,25 +58,29 @@ def get_pg_info(bam):
 
 def compile_output_list(wildcards):
 
-    files = {
-        "mitochondrial/gatk_sort_sam": [
-            "bam"
-        ],
-        "mitochondrial/gatk_collect_wgs_metrics": [
-            "metrics.txt", "theoretical_sensitivity.txt", "mean_coverage.txt", "median_coverage.txt",
-        ],
-        "mitochondrial/gatk_mutect2": [
-            "vcf"
-        ],
+    # files = {
+    #     "mitochondrial/gatk_sort_sam": [
+    #         "bam"
+    #     ],
+    #     "mitochondrial/gatk_collect_wgs_metrics": [
+    #         "metrics.txt", "theoretical_sensitivity.txt", "mean_coverage.txt", "median_coverage.txt",
+    #     ],
+    #     "mitochondrial/gatk_mutect2": [
+    #         "vcf"
+    #     ],
 
+    # }
+
+    files = {
+        "mitochondrial/gatk_merge_vcfs": ["vcf"]
     }
 
     output_files = [
-        "%s/%s_%s_%s.%s" % (prefix, sample, unit_type, ref, suffix)
+        "%s/%s_%s.%s" % (prefix, sample, unit_type,  suffix)
         for prefix in files.keys()
         for sample in get_samples(samples)
         for unit_type in get_unit_types(units, sample)
-        for ref in ['mt', 'mt_shifted']
+        # for ref in ['mt', 'mt_shifted']
         for suffix in files[prefix]
     ]
 
