@@ -72,7 +72,8 @@ def compile_output_list(wildcards):
     # }
 
     files = {
-        "mitochondrial/gatk_select_variants": ["vcf"]
+        "mitochondrial/gatk_select_variants": ["vcf"],
+        "mitochondrial/haplocheck": ["contamination.raw.txt"]
     }
 
     output_files = [

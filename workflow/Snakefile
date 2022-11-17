@@ -4,6 +4,7 @@ __email__ = "padraic.corcoran@scilifelab.uu.se"
 __license__ = "GPL-3"
 
 include: "rules/common.smk"
+include: "rules/haplocheck.smk"
 include: "rules/bwa.smk"
 include: "rules/gatk.smk"
 
