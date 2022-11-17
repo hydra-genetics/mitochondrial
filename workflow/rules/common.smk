@@ -72,7 +72,7 @@ def compile_output_list(wildcards):
     # }
 
     files = {
-        "mitochondrial/gatk_merge_vcfs": ["vcf"]
+        "mitochondrial/gatk_select_variants": ["vcf"]
     }
 
     output_files = [

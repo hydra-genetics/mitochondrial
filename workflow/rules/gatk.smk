@@ -321,7 +321,7 @@ rule gatk_extract_average_coverage:
         "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.coverage.txt.log",
     benchmark:
         repeat(
-            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.output.benchmark.tsv",
+            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.coverage.txt.benchmark.tsv",
             config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
         )
     threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
@@ -348,6 +348,7 @@ rule gatk_mutect2:
         bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, ""),
     output:
+        stats = temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.stats"),
         vcf=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf"),
     params:
         extra=config.get("gatk_mutect2", {}).get("extra", ""),
@@ -386,7 +387,8 @@ rule gatk_mutect2:
         "--max-reads-per-alignment-start {params.max_reads_per_alignment_start} "
         "--max-mnp-distance 0) &> {log}"
 
-
+# Liftover the variant from the control region in the shifted VCF to the mt reference genome coordinaged 
+# and merge with the non-control region chrM VCF
 
 rule gatk_lift_over_vcf:
     input:
@@ -399,10 +401,10 @@ rule gatk_lift_over_vcf:
     params:
         extra=config.get("gatk_lift_over_vcf", {}).get("extra", ""),
     log:
-        "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.output.log",
+        "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.vcf.log",
     benchmark:
         repeat(
-            "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.output.benchmark.tsv",
+            "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.vcf.benchmark.tsv",
             config.get("gatk_lift_over_vcf", {}).get("benchmark_repeats", 1)
         )
     threads: config.get("gatk_lift_over_vcf", {}).get("threads", config["default_resources"]["threads"])
@@ -461,4 +463,196 @@ rule gatk_merge_vcfs:
         "-I {input.shifted_vcf} "
         "-I {input.vcf} "
         "-O {output.vcf}) &> {log}"
+
+
+rule gatk_merge_stats:
+    input:
+        shifted_stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt.vcf.stats",
+        stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt_shifted.vcf.stats",
+    output:
+        merged_stats=temp("mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats"),
+    params:
+        extra=config.get("gatk_merge_stats", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats.benchmark.tsv",
+            config.get("gatk_merge_stats", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_merge_stats", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_merge_stats", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_merge_stats", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_merge_stats", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_merge_stats", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_merge_stats", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_merge_stats", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Merge thg mutect2 vcf stats files {input.shifted_stats} and {input.stats}"
+    shell:
+        "(gatk --java-options '-Xmx3g' MergeMutectStats " 
+        "--stats {input.shifted_stats} "
+        "--stats {input.stats} "
+        "-O {output.merged_stats}) &> {log}"
+
+
+rule gatk_filter_mutect_calls_mt:
+    input:
+        vcf="mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf",
+        ref=config.get("mt_reference", {}).get("mt", ""),
+        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats",
+    output:
+        vcf=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf"),
+    params:
+        extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
+        max_alt_allele_count=config.get("gatk_filter_mutect_calls_mt", {}).get("max_alt_allele_count", 4),
+        vaf_filter_threshold=config.get("gatk_filter_mutect_calls_mt", {}).get("vaf_filter_threshold", 0),
+        f_score_beta=config.get("gatk_filter_mutect_calls_mt", {}).get("f_score_beta", 1.0),
+        contamination=0.0
+    log:
+        "mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_filter_mutect_calls_mt", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_filter_mutect_calls_mt", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_filter_mutect_calls_mt", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_filter_mutect_calls_mt", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_filter_mutect_calls_mt", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_filter_mutect_calls_mt", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_filter_mutect_calls_mt", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode"
+    shell:
+        "(gatk --java-options '-Xmx3g' FilterMutectCalls  "
+        "-V {input.vcf}  "
+        "-R {input.ref}  "
+        "-O {output.vcf}  "
+        "--stats {input.mutect_stats}  "
+        "{params.extra}  "
+        "--mitochondria-mode  "
+        "--max-alt-allele-count {params.max_alt_allele_count}  "
+        "--min-allele-fraction {params.vaf_filter_threshold}  "
+        "--f-score-beta {params.f_score_beta} "
+        "--contamination-estimate {params.contamination}) &> {log}"
+
+
+rule gatk_variant_filtration:
+    input:
+        vcf="mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf",
+        blacklisted_sites=config.get("mt_reference", {}).get("blacklist", "")
+    output:
+        filtered_vcf=temp("mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf"),
+    params:
+        extra=config.get("gatk_variant_filtration", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_variant_filtration", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_variant_filtration", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_variant_filtration", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_variant_filtration", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_variant_filtration", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_variant_filtration", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_variant_filtration", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_variant_filtration", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Mask blacklisted ChrM sites in {input.vcf} using GATK's VariantFiltration"
+    shell:
+        "(gatk --java-options '-Xmx3g' VariantFiltration  "
+                "-V {input.vcf}  "
+                "-O {output.filtered_vcf}  "
+                "--apply-allele-specific-filters  "
+                "--mask {input.blacklisted_sites}  "
+                "--mask-name 'blacklisted_site') &> {log}"
+
+
+rule gatk_left_align_and_trim_variants:
+    input:
+        vcf="mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf",
+        ref=config.get("mt_reference", {}).get("mt", ""),
+    output:
+        vcf=temp("mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf"),
+    params:
+        extra=config.get("gatk_left_align_and_trim_variants", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_left_align_and_trim_variants", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_left_align_and_trim_variants", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_left_align_and_trim_variants", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_left_align_and_trim_variants", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_left_align_and_trim_variants", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_left_align_and_trim_variants", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_left_align_and_trim_variants", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_left_align_and_trim_variants", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Left align alleles and split multiallelic sites in {input.vcf}"
+    shell:
+        "(gatk --java-options '-Xmx3g' LeftAlignAndTrimVariants "
+        "-R {input.ref} "
+        "-V {input.vcf} "
+        "-O {output.vcf} "
+        "--split-multi-allelics "
+        "--dont-trim-alleles "
+        "--keep-original-ac) &> {log}"
+
+
+rule gatk_select_variants:
+    input:
+        vcf="mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf",
+    output:
+        vcf=temp("mitochondrial/gatk_select_variants/{sample}_{type}.vcf"),
+    params:
+        extra=config.get("gatk_select_variants", {}).get("extra", ""),
+    log:
+        "mitochondrial/gatk_select_variants/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_select_variants/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_select_variants", {}).get("benchmark_repeats", 1)
+        )
+    threads: config.get("gatk_select_variants", {}).get("threads", config["default_resources"]["threads"])
+    resources:
+        mem_mb=config.get("gatk_select_variants", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
+        mem_per_cpu=config.get("gatk_select_variants", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        partition=config.get("gatk_select_variants", {}).get("partition", config["default_resources"]["partition"]),
+        threads=config.get("gatk_select_variants", {}).get("threads", config["default_resources"]["threads"]),
+        time=config.get("gatk_select_variants", {}).get("time", config["default_resources"]["time"]),
+    container:
+        config.get("gatk_select_variants", {}).get("container", config["default_container"])
+    conda:
+        "../envs/gatk.yaml"
+    message:
+        "{rule}: Exclude filtered sites in {input.vcf}"
+    shell:
+        "(gatk --java-options '-Xmx3g' SelectVariants "
+        "-V {input.vcf} "
+        "-O {output.vcf} "
+        "--exclude-filtered) &> {log}"
+
 
