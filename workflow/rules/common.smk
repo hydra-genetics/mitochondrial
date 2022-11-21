@@ -10,7 +10,7 @@ from snakemake.utils import min_version
 from hydra_genetics.utils.resources import load_resources
 from hydra_genetics.utils.samples import *
 from hydra_genetics.utils.units import *
-from pysam import AlignmentFile
+
 
 min_version("6.8.0")
 
@@ -42,38 +42,23 @@ wildcard_constraints:
     sample="|".join(samples.index),
     type="N|T|R",
 
+def get_contamination_estimate(wildcards, haplocheck_report):
+    
+    df = pd.read_csv(haplocheck_report, sep='\t', index_col='Sample')
+    cont_est = df.loc['_'.join([wildcards.sample, wildcards.type]), 'Contamination Level']
+    
+    if cont_est == 'ND':
+        cont_est = '0'
+    
+    cont_est = cont_est.replace(',', '.') # program ouput ',' as decimal point on my mac 
 
-def get_pg_info(bam):
-
-    bamfile = AlignmentFile(bam, 'rb')
-    pg_header = bamfile.header['PG']
-
-    for d in pg_header:
-        if d['ID'] == 'bwa':
-            version = d['VN']
-            bwa_cmd_line = d['CL']
-
-    return(version, bwa_cmd_line)
+    return cont_est
 
 
 def compile_output_list(wildcards):
-
-    # files = {
-    #     "mitochondrial/gatk_sort_sam": [
-    #         "bam"
-    #     ],
-    #     "mitochondrial/gatk_collect_wgs_metrics": [
-    #         "metrics.txt", "theoretical_sensitivity.txt", "mean_coverage.txt", "median_coverage.txt",
-    #     ],
-    #     "mitochondrial/gatk_mutect2": [
-    #         "vcf"
-    #     ],
-
-    # }
-
+    
     files = {
-        "mitochondrial/gatk_select_variants": ["vcf"],
-        "mitochondrial/haplocheck": ["contamination.raw.txt"]
+        "mitochondrial/gatk_split_multi_allelic_sites": ["vcf"],
     }
 
     output_files = [
@@ -81,7 +66,6 @@ def compile_output_list(wildcards):
         for prefix in files.keys()
         for sample in get_samples(samples)
         for unit_type in get_unit_types(units, sample)
-        # for ref in ['mt', 'mt_shifted']
         for suffix in files[prefix]
     ]
 
