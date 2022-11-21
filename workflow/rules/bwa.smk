@@ -10,7 +10,14 @@ rule bwa_mem:
             "mitochondrial/gatk_sam_to_fastq/{sample}_{type}_1.fastq",
             "mitochondrial/gatk_sam_to_fastq/{sample}_{type}_2.fastq",    
         ],
-        idx=lambda wildcards: config.get("bwa_mem", {}).get("ann", "").get(wildcards.mt_ref, "")
+        idx=lambda wildcards: [
+            config.get("bwa_mem", {}).get("amb", "").get(wildcards.mt_ref, ""),
+            config.get("bwa_mem", {}).get("ann", "").get(wildcards.mt_ref, ""),
+            config.get("bwa_mem", {}).get("bwt", "").get(wildcards.mt_ref, ""),
+            config.get("bwa_mem", {}).get("pac", "").get(wildcards.mt_ref, ""),
+            config.get("bwa_mem", {}).get("sa", "").get(wildcards.mt_ref, ""),
+        ]
+
     output:
         bam=temp("mitochondrial/bwa_mem/{sample}_{type}_{mt_ref}.bam"),
     params:
