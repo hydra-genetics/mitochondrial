@@ -116,11 +116,11 @@ rule gatk_sam_to_fastq:
     message:
         "{rule}: Convert {input.bam} to fastq using the gatk4 wrapper of Picard's SamtoFastq"
     shell:
-        "gatk --java-options '-Xmx5g' SamToFastq "
+        "(gatk --java-options '-Xmx5g' SamToFastq "
         "-INPUT {input.bam} "
         "-F {output.fq1} "
         "-F2 {output.fq2} "
-        "-NON_PF true "
+        "-NON_PF true) &> {log} "
 
 
 # Merge the unmapped BAM with to the aligned BAM (separate merging for BAM mapped to mt referenece and  mt_shifted )
@@ -134,8 +134,6 @@ rule gatk_merge_bam_alignment:
     output:
         bam="mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam",
     params:
-        bwa_commandline=lambda wildcards, input: get_pg_info(input.bam)[1],
-        bwa_version=lambda wildcards, input: get_pg_info(input.bam)[0],
         extra=config.get("gatk_merge_bam_alignment", {}).get("extra", ""),
     log:
         "mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam.log",
@@ -158,33 +156,42 @@ rule gatk_merge_bam_alignment:
     message:
         "{rule}: Merge the ALigned {input.bam} and unmapped {input.ubam} using the gatk4 wrapper of Picard's MergeBamAlignment"
     shell:
-        "(gatk --java-options '-Xmx4g' MergeBamAlignment  "
-        "-VALIDATION_STRINGENCY SILENT "
-        "-EXPECTED_ORIENTATIONS FR "
-        "-ATTRIBUTES_TO_RETAIN X0 "
-        "-ATTRIBUTES_TO_REMOVE NM "
-        "-ATTRIBUTES_TO_REMOVE MD "
-        "-ALIGNED_BAM {input.bam} "
-        "-UNMAPPED_BAM {input.ubam} "
-        "-OUTPUT {output.bam} "
-        "-REFERENCE_SEQUENCE {input.ref} "
-        "-PAIRED_RUN true "
-        "-SORT_ORDER unsorted "
-        "-IS_BISULFITE_SEQUENCE false "
-        "-ALIGNED_READS_ONLY false "
-        "-CLIP_ADAPTERS false "
-        "-MAX_RECORDS_IN_RAM 2000000 "
-        "-ADD_MATE_CIGAR true "
-        "-MAX_INSERTIONS_OR_DELETIONS -1 "
-        "-PRIMARY_ALIGNMENT_STRATEGY MostDistant "
-        "-PROGRAM_RECORD_ID bwamem " 
-        "-PROGRAM_GROUP_VERSION '{params.bwa_version}' " 
-        "-PROGRAM_GROUP_COMMAND_LINE '{params.bwa_commandline}' " 
-        "-PROGRAM_GROUP_NAME bwamem " 
-        "-UNMAPPED_READ_STRATEGY COPY_TO_TAG "
-        "-ALIGNER_PROPER_PAIR_FLAGS true "
-        "-UNMAP_CONTAMINANT_READS true "
-        "-ADD_PG_TAG_TO_READS false) &> {log}"
+        """
+        version=`gatk PrintReadsHeader -I {input.bam} --verbosity 'ERROR'  \
+        -O /dev/stdout | grep 'PN:bwa' | cut -f4 | cut -f2 -d':'`
+
+        command=`gatk PrintReadsHeader -I {input.bam}  --verbosity 'ERROR' \
+        -O /dev/stdout | grep 'PN:bwa' | cut -f5 | cut -f2- -d':'`
+        
+        (gatk --java-options '-Xmx4g' MergeBamAlignment \
+        -VALIDATION_STRINGENCY SILENT \
+        -EXPECTED_ORIENTATIONS FR \
+        -ATTRIBUTES_TO_RETAIN X0 \
+        -ATTRIBUTES_TO_REMOVE NM \
+        -ATTRIBUTES_TO_REMOVE MD \
+        -ALIGNED_BAM {input.bam} \
+        -UNMAPPED_BAM {input.ubam} \
+        -OUTPUT {output.bam} \
+        -REFERENCE_SEQUENCE {input.ref} \
+        -PAIRED_RUN true \
+        -SORT_ORDER unsorted \
+        -IS_BISULFITE_SEQUENCE false \
+        -ALIGNED_READS_ONLY false \
+        -CLIP_ADAPTERS false \
+        -MAX_RECORDS_IN_RAM 2000000 \
+        -ADD_MATE_CIGAR true \
+        -MAX_INSERTIONS_OR_DELETIONS -1 \
+        -PRIMARY_ALIGNMENT_STRATEGY MostDistant \
+        -PROGRAM_RECORD_ID "bwamem" \
+        -PROGRAM_GROUP_VERSION "$version" \
+        -PROGRAM_GROUP_COMMAND_LINE "$command" \
+        -PROGRAM_GROUP_NAME "bwamem" \
+        -UNMAPPED_READ_STRATEGY COPY_TO_TAG \
+        -ALIGNER_PROPER_PAIR_FLAGS true \
+        -UNMAP_CONTAMINANT_READS true \
+        -ADD_PG_TAG_TO_READS false) &> {log}
+
+        """
 
 
 rule gatk_mark_duplicates:
@@ -308,7 +315,6 @@ rule gatk_collect_wgs_metrics:
         "-THEORETICAL_SENSITIVITY_OUTPUT {output.t_sensitivity}) &> {log}"
         
 
-
 rule gatk_extract_average_coverage:
     input:
         metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
@@ -334,7 +340,7 @@ rule gatk_extract_average_coverage:
     container:
         config.get("gatk_extract_average_coverage", {}).get("container", config["default_container"])
     conda:
-        "../envs/gatk.yaml"
+        "../envs/gatk_extract_average_coverage.yaml"
     message:
         "{rule}: Extract the mean and median coverage from {input.metrics}"
     script:
@@ -467,8 +473,8 @@ rule gatk_merge_vcfs:
 
 rule gatk_merge_stats:
     input:
-        shifted_stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt.vcf.stats",
-        stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt_shifted.vcf.stats",
+        stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt.vcf.stats",
+        shifted_stats="mitochondrial/gatk_mutect2/{sample}_{type}_mt_shifted.vcf.stats",
     output:
         merged_stats=temp("mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats"),
     params:
@@ -507,12 +513,13 @@ rule gatk_filter_mutect_calls_mt:
         mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats",
     output:
         vcf=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf"),
+        stats=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.filteringStats.tsv"),
     params:
         extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
         max_alt_allele_count=config.get("gatk_filter_mutect_calls_mt", {}).get("max_alt_allele_count", 4),
         vaf_filter_threshold=config.get("gatk_filter_mutect_calls_mt", {}).get("vaf_filter_threshold", 0),
         f_score_beta=config.get("gatk_filter_mutect_calls_mt", {}).get("f_score_beta", 1.0),
-        contamination=0.0
+        contamination=0.0,
     log:
         "mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.log",
     benchmark:
@@ -577,11 +584,11 @@ rule gatk_variant_filtration:
         "{rule}: Mask blacklisted ChrM sites in {input.vcf} using GATK's VariantFiltration"
     shell:
         "(gatk --java-options '-Xmx3g' VariantFiltration  "
-                "-V {input.vcf}  "
-                "-O {output.filtered_vcf}  "
-                "--apply-allele-specific-filters  "
-                "--mask {input.blacklisted_sites}  "
-                "--mask-name 'blacklisted_site') &> {log}"
+        "-V {input.vcf}  "
+        "-O {output.filtered_vcf}  "
+        "--apply-allele-specific-filters  "
+        "--mask {input.blacklisted_sites}  "
+        "--mask-name 'blacklisted_site') &> {log}"
 
 
 rule gatk_left_align_and_trim_variants:
@@ -656,3 +663,46 @@ rule gatk_select_variants:
         "--exclude-filtered) &> {log}"
 
 
+# Filter comtamination using the gatk_filter_mutect_calls_mt rule again
+
+use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
+    input:
+        vcf="mitochondrial/gatk_select_variants/{sample}_{type}.vcf",
+        ref=config.get("mt_reference", {}).get("mt", ""),
+        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats", # which stats file?
+        contamination="mitochondrial/haplocheck/{sample}_{type}.contamination.txt",
+    output:
+        vcf=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf"),
+        stats=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.filteringStats.tsv")
+    params:
+        extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
+        max_alt_allele_count=config.get("gatk_filter_mutect_calls_mt", {}).get("max_alt_allele_count", 4),
+        vaf_filter_threshold=config.get("gatk_filter_mutect_calls_mt", {}).get("vaf_filter_threshold", 0),
+        f_score_beta=config.get("gatk_filter_mutect_calls_mt", {}).get("f_score_beta", 1.0),
+        contamination=lambda wildcards, input: get_contamination_estimate(wildcards, input.contamination),
+    log:
+        "mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1)
+        )
+    message:
+        "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode with a contamination estimate"
+
+
+use rule gatk_left_align_and_trim_variants as gatk_split_multi_allelic_sites with:
+    input:
+        vcf="mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf",
+        ref=config.get("mt_reference", {}).get("mt", ""),
+    output:
+        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf"),
+    log:
+        "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.log",
+    benchmark:
+        repeat(
+            "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_left_align_and_trim_variants", {}).get("benchmark_repeats", 1)
+        )
+    message:
+        "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode with a contamination estimate"
