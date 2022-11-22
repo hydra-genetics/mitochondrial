@@ -9,6 +9,7 @@ def extract_avg_cov(infile, mean_outfile, median_outfile):
     mean_df.to_csv(mean_outfile, index=False, header=False)
     median_df = df.get(['MEDIAN_COVERAGE'])
     median_df.to_csv(median_outfile, index=False, header=False)
+    
 
 extract_avg_cov(snakemake.input.metrics, snakemake.output.mean, snakemake.output.median)
 
