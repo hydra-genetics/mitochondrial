@@ -36,40 +36,55 @@ properties:
         type: string
         description: parameters that should be forwarded to sorting (ie, number of threads)
       amb:
-        mt:
-          type: string
-          description: mt fasta reference amb file
-        mt_shifted:
-          type: string
-          description: mt_shifted fasta reference amb file
+        type: object
+        description: amb files
+        properties:
+          mt:
+            type: string
+            description: mt fasta reference amb file
+          mt_shifted:
+            type: string
+            description: mt_shifted fasta reference amb file
       ann:
-        mt:
-          type: string
-          description: mt fasta reference ann file
-        mt_shifted:
-          type: string
-          description: mt_shifted fasta reference ann file
+        type: object
+        description: ann files
+        properties:
+          mt:
+            type: string
+            description: mt fasta reference ann file
+          mt_shifted:
+            type: string
+            description: mt_shifted fasta reference ann file
       bwt:
-        mt:
-          type: string
-          description: mt fasta reference bwt file
-        mt_shifted:
-          type: string
-          description: mt_shifted fasta reference bwt file
+        type: object
+        description: bwt files
+        properties:
+          mt:
+            type: string
+            description: mt fasta reference bwt file
+          mt_shifted:
+            type: string
+            description: mt_shifted fasta reference bwt file
       pac:
-        mt:
-          type: string
-          description: mt fasta reference pac file
-        mt_shifted:
-          type: string
-          description: mt_shifted fasta reference pac file
+        type: object
+        description: pac files
+        properties:
+          mt:
+            type: string
+            description: mt fasta reference pac file
+          mt_shifted:
+            type: string
+            description: mt_shifted fasta reference pac file
       sa:
-        mt:
-          type: string
-          description: mt fasta reference sa file
-        mt_shifted:
-          type: string
-          description: mt_shifted fasta reference sa file
+        type: object
+        description: sa files
+        properties:
+          mt:
+            type: string
+            description: mt fasta reference sa file
+          mt_shifted:
+            type: string
+            description: mt_shifted fasta reference sa file
     required:
       - amb
       - ann
@@ -167,8 +182,9 @@ properties:
         type: string
         description: parameters that should be forwarded
       interval:
-        type: string
+        type: object
         description: interval list files
+        properties:
           mt: 
             type: string
             description: mitochondrial reference interval list file
@@ -178,6 +194,75 @@ properties:
       max_reads_per_alignment_start: 
         type: number
         description: Maximum number of reads to retain per alignment start position.
+
+  gatk_print_reads:
+    type: object
+    description: print reads setting
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+      interval: 
+        type: string
+        description: interval for print reads
+
+  gatk_revert_sam:
+    type: object
+    description: revert sam setting
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+
+  gatk_sam_to_fastq:
+    type: object
+    description: sam to fastq setting
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+
+  gatk_sort_sam:
+    type: object
+    description: sort sam settings
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+
+  gatk_variant_filtration:
+    type: object
+    description: variant filtration settings
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+
+  haplocheck:
+    type: object
+    description: haplocheck settings
+    properties:
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
 
   reference:
     type: object
@@ -189,7 +274,22 @@ properties:
       fai:
         type: string
         description: fasta reference fai file
-        
+
+  mt_reference:
+    type: object
+    description: mitochchondrial reference used 
+    properties:
+      mt:
+        type: string
+        description: fasta mitochondrial reference fasta file
+      mt_shifted:
+        type: string
+        description: fasta mitochondrial shifter reference fasta file
+      blacklist:
+        type: string
+        description: blacklisted mitochondrial sites bed file
+
+
 required:
   - samples
   - units
