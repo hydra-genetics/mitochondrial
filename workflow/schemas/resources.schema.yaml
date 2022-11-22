@@ -82,7 +82,7 @@ properties:
         description: max execution time
 
   gatk_mark_duplicates:
-   type: object
+    type: object
     description: resource definitions for gatk_mark_duplicates
     properties:
       mem_mb:
@@ -102,7 +102,7 @@ properties:
         description: max execution time
     
   gatk_merge_bam_alignment:
-   type: object
+    type: object
     description: resource definitions for gatk_merge_bam_alignment
     properties:
       mem_mb:
@@ -122,7 +122,7 @@ properties:
         description: max execution time
 
   gatk_merge_vcfs: 
-   type: object
+    type: object
     description: resource definitions for gatk_merge_vcfs
     properties:
       mem_mb:
@@ -139,10 +139,10 @@ properties:
         description: number of threads to be available
       time:
         type: string
-        description: max execution time
+      description: max execution time
 
   gatk_mutect2:
-   type: object
+    type: object
     description: resource definitions for gatk_mutect2
     properties:
       mem_mb:
@@ -162,7 +162,7 @@ properties:
         description: max execution time
 
   gatk_print_reads:
-   type: object
+    type: object
     description: resource definitions for gatk_print_reads
     properties:
       mem_mb:
@@ -182,7 +182,7 @@ properties:
         description: max execution time
 
   gatk_revert_sam:
-   type: object
+    type: object
     description: resource definitions for gatk_revert_sam
     properties:
       mem_mb:
@@ -202,7 +202,7 @@ properties:
         description: max execution time
 
   gatk_sam_to_fastq:
-   type: object
+    type: object
     description: resource definitions for gatk_sam_to_fastq
     properties:
       mem_mb:
@@ -222,7 +222,7 @@ properties:
         description: max execution time
 
   gatk_sort_sam:
-   type: object
+    type: object
     description: resource definitions for gatk_sort_sam
     properties:
       mem_mb:
@@ -243,43 +243,43 @@ properties:
 
   gatk_variant_filtration:
     type: object
-      description: resource definitions for gatk_variant_filtration
-      properties:
-        mem_mb:
-          type: integer
-          description: max memory in MB to be available
-        mem_per_cpu:
-          type: integer
-          description: memory in MB used per cpu
-        partition:
-          type: string
-          description: partition to use on cluster
-        threads:
-          type: integer
-          description: number of threads to be available
-        time:
-          type: string
-          description: max execution time
+    description: resource definitions for gatk_variant_filtration
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
 
   haplocheck:
     type: object
-      description: resource definitions for haplocheck
-      properties:
-        mem_mb:
-          type: integer
-          description: max memory in MB to be available
-        mem_per_cpu:
-          type: integer
-          description: memory in MB used per cpu
-        partition:
-          type: string
-          description: partition to use on cluster
-        threads:
-          type: integer
-          description: number of threads to be available
-        time:
-          type: string
-          description: max execution time
+    description: resource definitions for haplocheck
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
  
 required:
   - default_resources
