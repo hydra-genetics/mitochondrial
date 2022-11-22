@@ -65,10 +65,10 @@ To use this module in your workflow, follow the description in the
 Add the module to your `Snakefile` like so:
 
 ```bash
-module prealignment:
+module mitochondrial:
     snakefile:
         github(
-            "mito_snv_indels",
+            "mitochondrial",
             path="workflow/Snakefile",
             tag="1.0.0",
         )
@@ -85,6 +85,7 @@ The following output files should be targeted via another rule:
 
 | File | Description |
 |---|---|
-| `mitochondrial/PATH/FILE` | DESCRIPTION |
+| `mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf` | mitochondrial `.vcf` from mutect2 |
 
 ## :judge: Rule Graph
+![rule_graph](images/rulegraph.svg)
