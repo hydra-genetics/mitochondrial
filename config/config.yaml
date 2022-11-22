@@ -1,7 +1,80 @@
 ---
 
- resources: "resources.yaml"
- samples: "samples.tsv"
- units: "units.tsv"
+resources: "resources.yaml"
+samples: "samples.tsv"
+units: "units.tsv"
 
- default_container: "docker://hydragenetics/common:0.1.1"
+default_container: "docker://hydragenetics/common:0.1.9"
+
+reference:
+  fasta: ""
+  fai: ""
+  
+mt_reference:
+  mt: ""
+  mt_shifted: ""
+  blacklist: ""
+
+bwa_mem:
+  container: "docker://hydragenetics/bwa_mem:0.7.17"
+  extra: ""
+  amb:
+    mt: ""
+    mt_shifted: ""
+  ann:
+    mt: ""
+    mt_shifted: ""
+  bwt:
+    mt: ""
+    mt_shifted: ""
+  pac:
+    mt: ""
+    mt_shifted: ""
+  sa:
+    mt: ""
+    mt_shifted: ""
+
+gatk_collect_wgs_metrics:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  coverage_cap: ""
+  read_length: ""
+
+gatk_lift_over_vcf:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  shift_back_chain: ""
+
+gatk_mark_duplicates:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_bam_alignment:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_vcfs:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_mutect2:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  interval:
+    mt: ""
+    mt_shifted: ""
+  max_reads_per_alignment_start: ""
+
+gatk_print_reads:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  interval: ""
+
+gatk_revert_sam:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_sam_to_fastq:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_sort_sam:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_variant_filtration:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+haplocheck:
+  container: "docker://hydragenetics/haplocheck:1.3.3"
+
