@@ -11,7 +11,6 @@ rule gatk_print_reads:
     input:
         bam="alignment/samtools_merge_bam/{sample}_{type}.bam",
         bai="alignment/samtools_merge_bam/{sample}_{type}.bam.bai",
-        ref=config.get("reference", {}).get("fasta", ""),
     output:
         bam="mitochondrial/gatk_print_reads/{sample}_{type}.bam",
     params:
@@ -40,7 +39,6 @@ rule gatk_print_reads:
     shell:
         "(gatk --java-options '-Xmx3g' PrintReads "
         "-I {input.bam} "
-        "-R {input.ref} "
         "-L {params.interval} "
         "-O {output.bam} "
         "--read-filter MateOnSameContigOrNoMappedMateReadFilter "
