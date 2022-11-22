@@ -269,7 +269,7 @@ rule gatk_sort_sam:
         "-CREATE_INDEX true "
         "-MAX_RECORDS_IN_RAM 300000) &> {log}"
 
-## Collect coverage metrics for MT and for the autosomes 
+## Collect coverage metrics for MT 
 
 rule gatk_collect_wgs_metrics:
     input:
@@ -669,7 +669,7 @@ use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
     input:
         vcf="mitochondrial/gatk_select_variants/{sample}_{type}.vcf",
         ref=config.get("mt_reference", {}).get("mt", ""),
-        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats", # which stats file?
+        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats", 
         contamination="mitochondrial/haplocheck/{sample}_{type}.contamination.txt",
     output:
         vcf=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf"),
