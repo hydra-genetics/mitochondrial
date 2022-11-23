@@ -352,11 +352,12 @@ rule gatk_extract_average_coverage:
 rule gatk_mutect2:
     input:
         bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
+        bai="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bai",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, ""),
     output:
         stats = temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.stats"),
         vcf=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf"),
-        idx=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.idx")
+        idx=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.idx"),
     params:
         extra=config.get("gatk_mutect2", {}).get("extra", ""),
         interval=lambda wildcards: config.get("gatk_mutect2", {}).get("interval", {}).get(wildcards.mt_ref, ""),
