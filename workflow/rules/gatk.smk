@@ -12,7 +12,8 @@ rule gatk_print_reads:
         bam="alignment/samtools_merge_bam/{sample}_{type}.bam",
         bai="alignment/samtools_merge_bam/{sample}_{type}.bam.bai",
     output:
-        bam="mitochondrial/gatk_print_reads/{sample}_{type}.bam",
+        bam=temp("mitochondrial/gatk_print_reads/{sample}_{type}.bam"),
+        bai=temp("mitochondrial/gatk_print_reads/{sample}_{type}.bai")
     params:
         extra=config.get("gatk_print_reads", {}).get("extra", ""),
         interval=config.get("gatk_print_reads", {}).get("interval", ""),
@@ -50,7 +51,7 @@ rule gatk_revert_sam:
     input:
         bam="mitochondrial/gatk_print_reads/{sample}_{type}.bam",
     output:
-        bam="mitochondrial/gatk_revert_sam/{sample}_{type}.bam",
+        bam=temp("mitochondrial/gatk_revert_sam/{sample}_{type}.bam"),
     params:
         extra=config.get("gatk_revert_sam", {}).get("extra", ""),
     log:
@@ -89,8 +90,8 @@ rule gatk_sam_to_fastq:
     input:
         bam="mitochondrial/gatk_revert_sam/{sample}_{type}.bam",
     output:
-        fq1="mitochondrial/gatk_sam_to_fastq/{sample}_{type}_1.fastq",
-        fq2="mitochondrial/gatk_sam_to_fastq/{sample}_{type}_2.fastq",
+        fq1=temp("mitochondrial/gatk_sam_to_fastq/{sample}_{type}_1.fastq"),
+        fq2=temp("mitochondrial/gatk_sam_to_fastq/{sample}_{type}_2.fastq"),
     params:
         extra=config.get("gatk_sam_to_fastq", {}).get("extra", ""),
     log:
@@ -130,7 +131,7 @@ rule gatk_merge_bam_alignment:
         ubam="mitochondrial/gatk_revert_sam/{sample}_{type}.bam",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
     output:
-        bam="mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam",
+        bam=temp("mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam"),
     params:
         extra=config.get("gatk_merge_bam_alignment", {}).get("extra", ""),
     log:
@@ -155,8 +156,8 @@ rule gatk_merge_bam_alignment:
         "{rule}: Merge the ALigned {input.bam} and unmapped {input.ubam} using the gatk4 wrapper of Picard's MergeBamAlignment"
     shell:
         """
-        version=`gatk PrintReadsHeader -I {input.bam} --verbosity 'ERROR'  \
-        -O /dev/stdout | grep 'PN:bwa' | cut -f4 | cut -f2 -d':'`
+        version=`(gatk PrintReadsHeader -I {input.bam} --verbosity 'ERROR'  \
+        -O /dev/stdout | grep 'PN:bwa' | cut -f4 | cut -f2 -d':')`
 
         command=`gatk PrintReadsHeader -I {input.bam}  --verbosity 'ERROR' \
         -O /dev/stdout | grep 'PN:bwa' | cut -f5 | cut -f2- -d':'`
@@ -196,8 +197,8 @@ rule gatk_mark_duplicates:
     input:
         bam="mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam",
     output:
-        bam="mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.bam",
-        metrics="mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.metrics.txt"
+        bam=temp("mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.bam"),
+        metrics=temp("mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.metrics.txt")
     params:
         extra=config.get("gatk_mark_duplicates", {}).get("extra", ""),
     log:
@@ -236,7 +237,8 @@ rule gatk_sort_sam:
     input:
         bam="mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.bam",
     output:
-        bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
+        bam=temp("mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam"),
+        bai=temp("mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bai"),
     params:
         extra=config.get("gatk_sort_sam", {}).get("extra", ""),
     log:
@@ -274,8 +276,8 @@ rule gatk_collect_wgs_metrics:
         bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
     output:
-        metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
-        t_sensitivity="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.theoretical_sensitivity.txt"
+        metrics=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt"),
+        t_sensitivity=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.theoretical_sensitivity.txt")
     params:
         coverage_cap=config.get("gatk_collect_wgs_metrics").get("coverage_cap", ""),
         extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
@@ -317,8 +319,8 @@ rule gatk_extract_average_coverage:
     input:
         metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
     output:
-        mean="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.mean_coverage.txt",
-        median="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.median_coverage.txt"
+        mean=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.mean_coverage.txt"),
+        median=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.median_coverage.txt")
     params:
         extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
     log:
@@ -354,6 +356,7 @@ rule gatk_mutect2:
     output:
         stats = temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.stats"),
         vcf=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf"),
+        idx=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.idx")
     params:
         extra=config.get("gatk_mutect2", {}).get("extra", ""),
         interval=lambda wildcards: config.get("gatk_mutect2", {}).get("interval", {}).get(wildcards.mt_ref, ""),
@@ -401,6 +404,7 @@ rule gatk_lift_over_vcf:
         shift_back_chain=config.get("gatk_lift_over_vcf", {}).get("shift_back_chain", ""),
     output:
         shifted_back_vcf=temp("mitochondrial/gatk_lift_over_vcf/{sample}_{type}.shifted_back.vcf"),
+        shifted_back_idx=temp("mitochondrial/gatk_lift_over_vcf/{sample}_{type}.shifted_back.vcf.idx"),
         reject=temp("mitochondrial/gatk_lift_over_vcf/{sample}_{type}.reject.vcf"),
     params:
         extra=config.get("gatk_lift_over_vcf", {}).get("extra", ""),
@@ -439,6 +443,7 @@ rule gatk_merge_vcfs:
         vcf="mitochondrial/gatk_mutect2/{sample}_{type}_mt.vcf",
     output:
         vcf=temp("mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf.idx"),
     params:
         extra=config.get("gatk_merge_vcfs", {}).get("extra", ""),
     log:
@@ -511,6 +516,7 @@ rule gatk_filter_mutect_calls_mt:
         mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats",
     output:
         vcf=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.idx"),
         stats=temp("mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.filteringStats.tsv"),
     params:
         extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
@@ -558,6 +564,7 @@ rule gatk_variant_filtration:
         blacklisted_sites=config.get("mt_reference", {}).get("blacklist", "")
     output:
         filtered_vcf=temp("mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf.idx"),
     params:
         extra=config.get("gatk_variant_filtration", {}).get("extra", ""),
     log:
@@ -595,6 +602,7 @@ rule gatk_left_align_and_trim_variants:
         ref=config.get("mt_reference", {}).get("mt", ""),
     output:
         vcf=temp("mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf.idx"),
     params:
         extra=config.get("gatk_left_align_and_trim_variants", {}).get("extra", ""),
     log:
@@ -632,6 +640,7 @@ rule gatk_select_variants:
         vcf="mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf",
     output:
         vcf=temp("mitochondrial/gatk_select_variants/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_select_variants/{sample}_{type}.vcf.idx"),
     params:
         extra=config.get("gatk_select_variants", {}).get("extra", ""),
     log:
@@ -671,6 +680,7 @@ use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
         contamination="mitochondrial/haplocheck/{sample}_{type}.contamination.txt",
     output:
         vcf=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.idx"),
         stats=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.filteringStats.tsv")
     params:
         extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
@@ -694,7 +704,8 @@ use rule gatk_left_align_and_trim_variants as gatk_split_multi_allelic_sites wit
         vcf="mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf",
         ref=config.get("mt_reference", {}).get("mt", ""),
     output:
-        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf"),
+        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.gz"),
+        idx=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.gz.tbi"),
     log:
         "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.log",
     benchmark:
