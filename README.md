@@ -7,9 +7,6 @@
 ![snakemake dry run](https://github.com/hydra-genetics/mitochondrial/actions/workflows/snakemake-dry-run.yaml/badge.svg?branch=develop)
 ![integration test](https://github.com/hydra-genetics/mitochondrial/actions/workflows/integration1.yaml/badge.svg?branch=develop)
 
-![pycodestyle](https://github.com/hydra-genetics/mitochondrial/actions/workflows/pycodestyl.yaml/badge.svg?branch=develop)
-![pytest](https://github.com/hydra-genetics/mitochondrial/actions/workflows/pytest.yaml/badge.svg?branch=develop)
-
 [![License: GPL-3](https://img.shields.io/badge/License-GPL3-yellow.svg)](https://opensource.org/licenses/gpl-3.0.html)
 
 ## :speech_balloon: Introduction
