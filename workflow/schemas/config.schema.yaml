@@ -264,17 +264,6 @@ properties:
         type: string
         description: parameters that should be forwarded
 
-  reference:
-    type: object
-    description: reference used 
-    properties:
-      fasta:
-        type: string
-        description: fasta reference file
-      fai:
-        type: string
-        description: fasta reference fai file
-
   mt_reference:
     type: object
     description: mitochchondrial reference used 
