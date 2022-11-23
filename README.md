@@ -14,7 +14,7 @@
 
 ## :speech_balloon: Introduction
 
-The module consists of alignment  ....
+The module consists of rules to call mitochondrial variants from `.bam` files. Mitochondorial SNV and Indels are called using mutect2 following the GATK Best Practice Workflow for mitochondrial short variants.
 
 ## :heavy_exclamation_mark: Dependencies
 
