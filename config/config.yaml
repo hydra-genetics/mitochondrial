@@ -5,11 +5,7 @@ samples: "samples.tsv"
 units: "units.tsv"
 
 default_container: "docker://hydragenetics/common:0.1.9"
-
-reference:
-  fasta: ""
-  fai: ""
-  
+ 
 mt_reference:
   mt: ""
   mt_shifted: ""
@@ -39,6 +35,15 @@ gatk_collect_wgs_metrics:
   coverage_cap: ""
   read_length: ""
 
+gatk_filter_contamination:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_filter_mutect_calls_mt:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_left_align_and_trim_variants:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
 gatk_lift_over_vcf:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
   shift_back_chain: ""
@@ -50,6 +55,9 @@ gatk_merge_bam_alignment:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_merge_vcfs:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_stats:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_mutect2:
@@ -69,7 +77,13 @@ gatk_revert_sam:
 gatk_sam_to_fastq:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
+gatk_select_variants:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
 gatk_sort_sam:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_split_multi_allelic_sites:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_variant_filtration:

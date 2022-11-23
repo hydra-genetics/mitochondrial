@@ -58,6 +58,9 @@ gatk_merge_bam_alignment:
 gatk_merge_vcfs:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
+gatk_merge_stats:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"  
+
 gatk_mutect2:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
   interval:
