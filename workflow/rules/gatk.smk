@@ -313,38 +313,6 @@ rule gatk_collect_wgs_metrics:
         "-COVERAGE_CAP  {params.coverage_cap} "
         "-INCLUDE_BQ_HISTOGRAM true "
         "-THEORETICAL_SENSITIVITY_OUTPUT {output.t_sensitivity}) &> {log}"
-        
-
-rule gatk_extract_average_coverage:
-    input:
-        metrics="mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt",
-    output:
-        mean=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.mean_coverage.txt"),
-        median=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.median_coverage.txt")
-    params:
-        extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
-    log:
-        "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.coverage.txt.log",
-    benchmark:
-        repeat(
-            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.coverage.txt.benchmark.tsv",
-            config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
-        )
-    threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
-    resources:
-        mem_mb=config.get("gatk_collect_wgs_metrics", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
-        mem_per_cpu=config.get("gatk_collect_wgs_metrics", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
-        partition=config.get("gatk_collect_wgs_metrics", {}).get("partition", config["default_resources"]["partition"]),
-        threads=config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"]),
-        time=config.get("gatk_collect_wgs_metrics", {}).get("time", config["default_resources"]["time"]),
-    container:
-        config.get("gatk_extract_average_coverage", {}).get("container", config["default_container"])
-    conda:
-        "../envs/gatk_extract_average_coverage.yaml"
-    message:
-        "{rule}: Extract the mean and median coverage from {input.metrics}"
-    script:
-        "../scripts/gatk_extract_average_coverage.py"
 
 
 # Call MT variants with mutect2
