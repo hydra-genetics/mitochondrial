@@ -43,7 +43,7 @@ gatk_filter_mutect_calls_mt:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_left_align_and_trim_variants:
-  container: "docker://hydragenetics/gatk4:4.2.2"
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_lift_over_vcf:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
