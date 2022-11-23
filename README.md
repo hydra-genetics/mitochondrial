@@ -88,4 +88,4 @@ The following output files should be targeted via another rule:
 | `mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf` | mitochondrial `.vcf` from mutect2 |
 
 ## :judge: Rule Graph
-![rule_graph](images/rulegraph.svg)
+![rule_graph](images/dag.svg)
