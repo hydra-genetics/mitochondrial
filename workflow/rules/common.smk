@@ -58,7 +58,7 @@ def get_contamination_estimate(wildcards, haplocheck_report):
 def compile_output_list(wildcards):
     
     files = {
-        "mitochondrial/gatk_split_multi_allelic_sites": ["vcf"],
+        "mitochondrial/gatk_split_multi_allelic_sites": ["vcf.gz"],
     }
 
     output_files = [
@@ -69,5 +69,17 @@ def compile_output_list(wildcards):
         for suffix in files[prefix]
     ]
 
+    files =  {
+        "mitochondrial/gatk_collect_wgs_metrics": ["metrics.txt"]
+    }
+
+    output_files += [
+        "%s/%s_%s_%s.%s" % (prefix, sample, unit_type, mt_ref,  suffix)
+        for prefix in files.keys()
+        for sample in get_samples(samples)
+        for unit_type in get_unit_types(units, sample)
+        for mt_ref in ['mt', 'mt_shifted']
+        for suffix in files[prefix]
+    ]
     
     return output_files
