@@ -13,7 +13,7 @@ properties:
     type: string
     description: name or path to a default docker/singularity container
 
-  bwa_mem:
+  bwa_mem_mito:
     type: object
     description: parameters for bwa mem
     properties:

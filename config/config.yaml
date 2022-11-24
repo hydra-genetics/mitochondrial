@@ -11,7 +11,7 @@ mt_reference:
   mt_shifted: ""
   blacklist: ""
 
-bwa_mem:
+bwa_mem_mito:
   container: "docker://hydragenetics/bwa_mem:0.7.17"
   extra: ""
   amb:

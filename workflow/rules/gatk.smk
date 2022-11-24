@@ -127,7 +127,7 @@ rule gatk_sam_to_fastq:
 
 rule gatk_merge_bam_alignment:
     input:
-        bam="mitochondrial/bwa_mem/{sample}_{type}_{mt_ref}.bam",
+        bam="mitochondrial/bwa_mem_mito/{sample}_{type}_{mt_ref}.bam",
         ubam="mitochondrial/gatk_revert_sam/{sample}_{type}.bam",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
     output:

@@ -199,7 +199,7 @@
 <g id="node14" class="node">
 <title>13</title>
 <path fill="none" stroke="#61d856" stroke-width="2" d="M218,-1044C218,-1044 146,-1044 146,-1044 140,-1044 134,-1038 134,-1032 134,-1032 134,-1020 134,-1020 134,-1014 140,-1008 146,-1008 146,-1008 218,-1008 218,-1008 224,-1008 230,-1014 230,-1020 230,-1020 230,-1032 230,-1032 230,-1038 224,-1044 218,-1044"/>
-<text text-anchor="middle" x="182" y="-1029" font-family="sans" font-size="10.00">bwa_mem</text>
+<text text-anchor="middle" x="182" y="-1029" font-family="sans" font-size="10.00">bwa_mem_mito_mito</text>
 <text text-anchor="middle" x="182" y="-1018" font-family="sans" font-size="10.00">mt_ref: mt_shifted</text>
 </g>
 <!-- 13&#45;&gt;12 -->

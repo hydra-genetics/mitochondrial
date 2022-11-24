@@ -23,7 +23,7 @@ properties:
 
   bwa_mem:
     type: object
-    description: resource definitions for bwa_mem
+    description: resource definitions for bwa_mem_mito
     properties:
       mem_mb:
         type: integer

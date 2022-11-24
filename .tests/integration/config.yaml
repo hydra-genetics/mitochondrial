@@ -12,7 +12,7 @@ mt_reference:
   mt_shifted: "reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta"
   blacklist: reference/blacklist_sites.hg38.chrM.bed
 
-bwa_mem:
+bwa_mem_mito:
   container: "docker://hydragenetics/bwa_mem:0.7.17"
   extra: "-K 100000000 -v3 -Y"
   amb:
