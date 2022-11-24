@@ -65,7 +65,7 @@ Add the module to your `Snakefile` like so:
 module mitochondrial:
     snakefile:
         github(
-            "mitochondrial",
+            "hydra-genetics/mitochondrial",
             path="workflow/Snakefile",
             tag="1.0.0",
         )
