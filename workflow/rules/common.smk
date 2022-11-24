@@ -58,7 +58,7 @@ def get_contamination_estimate(wildcards, haplocheck_report):
 def compile_output_list(wildcards):
     
     files = {
-        "mitochondrial/gatk_split_multi_allelic_sites": ["vcf.gz"],
+        "mitochondrial/gatk_split_multi_allelic_sites": ["vcf"],
     }
 
     output_files = [

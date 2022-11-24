@@ -673,8 +673,8 @@ use rule gatk_left_align_and_trim_variants as gatk_split_multi_allelic_sites wit
         vcf="mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf",
         ref=config.get("mt_reference", {}).get("mt", ""),
     output:
-        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.gz"),
-        idx=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.gz.tbi"),
+        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.idx"),
     log:
         "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.log",
     benchmark:
