@@ -44,13 +44,13 @@ wildcard_constraints:
 
 def get_contamination_estimate(wildcards, haplocheck_report):
     
-    df = pd.read_csv(haplocheck_report, sep='\t', index_col='Sample')
+    df = pd.read_csv(haplocheck_report, sep='\t', index_col='Sample', dtype=str)
     cont_est = df.loc['_'.join([wildcards.sample, wildcards.type]), 'Contamination Level']
     
     if cont_est == 'ND':
         cont_est = '0'
     
-    cont_est = cont_est.replace(',', '.') # program ouput ',' as decimal point on my mac 
+    cont_est = cont_est.replace(',', '.') # deal with case where estimate has ',' as decimal point
 
     return cont_est
 
