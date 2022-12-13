@@ -83,7 +83,7 @@ gatk_select_variants:
 gatk_sort_sam:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
-gatk_split_multi_allelic_sites:
+gatk_select_variants_final:
   container: "docker://hydragenetics/gatk4:4.2.2.0"
 
 gatk_variant_filtration:

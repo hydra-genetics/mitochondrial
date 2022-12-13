@@ -273,20 +273,20 @@ rule gatk_sort_sam:
 
 rule gatk_collect_wgs_metrics:
     input:
-        bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
-        ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
+        bam="mitochondrial/gatk_sort_sam/{sample}_{type}_mt.bam",
+        ref=lambda wildcards: config.get("mt_reference", {}).get("mt", "")
     output:
-        metrics=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt"),
-        t_sensitivity=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.theoretical_sensitivity.txt")
+        metrics=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt"),
+        t_sensitivity=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.theoretical_sensitivity.txt")
     params:
         coverage_cap=config.get("gatk_collect_wgs_metrics").get("coverage_cap", ""),
         extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
         read_length=config.get("gatk_collect_wgs_metrics").get("read_length"),
     log:
-        "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt.log",
+        "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt.log",
     benchmark:
         repeat(
-            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_{mt_ref}.metrics.txt.benchmark.tsv",
+            "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt.benchmark.tsv",
             config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
         )
     threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
@@ -668,19 +668,16 @@ use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
         "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode with a contamination estimate"
 
 
-use rule gatk_left_align_and_trim_variants as gatk_split_multi_allelic_sites with:
+use rule gatk_select_variants as gatk_select_variants_final with:
     input:
         vcf="mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf",
-        ref=config.get("mt_reference", {}).get("mt", ""),
     output:
-        vcf=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf"),
-        idx=temp("mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.idx"),
+        vcf=temp("mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf"),
+        idx=temp("mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf.idx"),
     log:
-        "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.log",
+        "mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf.log",
     benchmark:
         repeat(
-            "mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_left_align_and_trim_variants", {}).get("benchmark_repeats", 1)
+            "mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf.benchmark.tsv",
+            config.get("gatk_select_variants_final", {}).get("benchmark_repeats", 1)
         )
-    message:
-        "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode with a contamination estimate"

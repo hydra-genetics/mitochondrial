@@ -21,7 +21,7 @@ properties:
         type: string
         description: default partition to use on the cluser for a rule
 
-  bwa_mem:
+  bwa_mem_mito:
     type: object
     description: resource definitions for bwa_mem_mito
     properties:
@@ -44,6 +44,66 @@ properties:
   gatk_collect_wgs_metrics:
     type: object
     description: resource definitions for gatk_collect_wgs_metrics
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+  
+  gatk_filter_contamination:
+    type: object
+    description: resource definitions for gatk_filter_contamination
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+  
+  gatk_filter_mutect_calls_mt:
+    type: object
+    description: resource definitions for gatk_filter_mutect_calls_mt
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+
+  gatk_left_align_and_trim_variants:
+    type: object
+    description: resource definitions for gatk_left_align_and_trim_variants
     properties:
       mem_mb:
         type: integer
@@ -104,6 +164,26 @@ properties:
   gatk_merge_bam_alignment:
     type: object
     description: resource definitions for gatk_merge_bam_alignment
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+
+  gatk_merge_stats:
+    type: object
+    description: resource definitions for gatk_merge_stats
     properties:
       mem_mb:
         type: integer
@@ -204,6 +284,46 @@ properties:
   gatk_sam_to_fastq:
     type: object
     description: resource definitions for gatk_sam_to_fastq
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+  
+  gatk_select_variants:
+    type: object
+    description: resource definitions for gatk_select_variants
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+  
+  gatk_select_variants_final:
+    type: object
+    description: resource definitions for gatk_select_variants_final
     properties:
       mem_mb:
         type: integer
