@@ -4,8 +4,8 @@ __email__ = "padraic.corcoran@scilifelab.uu.se"
 __license__ = "GPL-3"
 
 
-
 ## Subset to ChrM reads and Create unmapped Bam file
+
 
 rule gatk_print_reads:
     input:
@@ -13,7 +13,7 @@ rule gatk_print_reads:
         bai="alignment/samtools_merge_bam/{sample}_{type}.bam.bai",
     output:
         bam=temp("mitochondrial/gatk_print_reads/{sample}_{type}.bam"),
-        bai=temp("mitochondrial/gatk_print_reads/{sample}_{type}.bai")
+        bai=temp("mitochondrial/gatk_print_reads/{sample}_{type}.bai"),
     params:
         extra=config.get("gatk_print_reads", {}).get("extra", ""),
         interval=config.get("gatk_print_reads", {}).get("interval", ""),
@@ -22,7 +22,7 @@ rule gatk_print_reads:
     benchmark:
         repeat(
             "mitochondrial/gatk_print_reads/{sample}_{type}.bam.benchmark.tsv",
-            config.get("gatk_print_reads", {}).get("benchmark_repeats", 1)
+            config.get("gatk_print_reads", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_print_reads", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -45,7 +45,7 @@ rule gatk_print_reads:
         "--read-filter MateOnSameContigOrNoMappedMateReadFilter "
         "--read-filter MateUnmappedAndUnmappedReadFilter "
         "--read-index {input.bai}) &>{log}"
-        
+
 
 rule gatk_revert_sam:
     input:
@@ -59,7 +59,7 @@ rule gatk_revert_sam:
     benchmark:
         repeat(
             "mitochondrial/gatk_revert_sam/{sample}_{type}.bam.benchmark.tsv",
-            config.get("gatk_revert_sam", {}).get("benchmark_repeats", 1)
+            config.get("gatk_revert_sam", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_revert_sam", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -99,7 +99,7 @@ rule gatk_sam_to_fastq:
     benchmark:
         repeat(
             "mitochondrial/gatk_sam_to_fastq/{sample}_{type}.fastq.benchmark.tsv",
-            config.get("gatk_sam_to_fastq", {}).get("benchmark_repeats", 1)
+            config.get("gatk_sam_to_fastq", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_sam_to_fastq", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -129,7 +129,7 @@ rule gatk_merge_bam_alignment:
     input:
         bam="mitochondrial/bwa_mem_mito/{sample}_{type}_{mt_ref}.bam",
         ubam="mitochondrial/gatk_revert_sam/{sample}_{type}.bam",
-        ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, "")
+        ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, ""),
     output:
         bam=temp("mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam"),
     params:
@@ -139,7 +139,7 @@ rule gatk_merge_bam_alignment:
     benchmark:
         repeat(
             "mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam.benchmark.tsv",
-            config.get("gatk_merge_bam_alignment", {}).get("benchmark_repeats", 1)
+            config.get("gatk_merge_bam_alignment", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_merge_bam_alignment", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -198,7 +198,7 @@ rule gatk_mark_duplicates:
         bam="mitochondrial/gatk_merge_bam_alignment/{sample}_{type}_{mt_ref}.bam",
     output:
         bam=temp("mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.bam"),
-        metrics=temp("mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.metrics.txt")
+        metrics=temp("mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.metrics.txt"),
     params:
         extra=config.get("gatk_mark_duplicates", {}).get("extra", ""),
     log:
@@ -206,7 +206,7 @@ rule gatk_mark_duplicates:
     benchmark:
         repeat(
             "mitochondrial/gatk_mark_duplicates/{sample}_{type}_{mt_ref}.bam.benchmark.tsv",
-            config.get("gatk_mark_duplicates", {}).get("benchmark_repeats", 1)
+            config.get("gatk_mark_duplicates", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_mark_duplicates", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -228,7 +228,7 @@ rule gatk_mark_duplicates:
         "-METRICS_FILE {output.metrics} "
         "-VALIDATION_STRINGENCY SILENT "
         "-OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 "
-        "-ASSUME_SORT_ORDER queryname " 
+        "-ASSUME_SORT_ORDER queryname "
         "-CLEAR_DT false "
         "-ADD_PG_TAG_TO_READS false) &> {log}"
 
@@ -246,7 +246,7 @@ rule gatk_sort_sam:
     benchmark:
         repeat(
             "mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam.benchmark.tsv",
-            config.get("gatk_sort_sam", {}).get("benchmark_repeats", 1)
+            config.get("gatk_sort_sam", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_sort_sam", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -265,19 +265,21 @@ rule gatk_sort_sam:
         "(gatk --java-options '-Xmx4g' SortSam  "
         "-INPUT {input.bam} "
         "-OUTPUT {output.bam} "
-        "-SORT_ORDER coordinate " 
+        "-SORT_ORDER coordinate "
         "-CREATE_INDEX true "
         "-MAX_RECORDS_IN_RAM 300000) &> {log}"
 
-## Collect coverage metrics for MT 
+
+## Collect coverage metrics for MT
+
 
 rule gatk_collect_wgs_metrics:
     input:
         bam="mitochondrial/gatk_sort_sam/{sample}_{type}_mt.bam",
-        ref=lambda wildcards: config.get("mt_reference", {}).get("mt", "")
+        ref=lambda wildcards: config.get("mt_reference", {}).get("mt", ""),
     output:
         metrics=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt"),
-        t_sensitivity=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.theoretical_sensitivity.txt")
+        t_sensitivity=temp("mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.theoretical_sensitivity.txt"),
     params:
         coverage_cap=config.get("gatk_collect_wgs_metrics").get("coverage_cap", ""),
         extra=config.get("gatk_collect_wgs_metrics", {}).get("extra", ""),
@@ -287,7 +289,7 @@ rule gatk_collect_wgs_metrics:
     benchmark:
         repeat(
             "mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt.benchmark.tsv",
-            config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1)
+            config.get("gatk_collect_wgs_metrics", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_collect_wgs_metrics", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -317,13 +319,14 @@ rule gatk_collect_wgs_metrics:
 
 # Call MT variants with mutect2
 
+
 rule gatk_mutect2:
     input:
         bam="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bam",
         bai="mitochondrial/gatk_sort_sam/{sample}_{type}_{mt_ref}.bai",
         ref=lambda wildcards: config.get("mt_reference", {}).get(wildcards.mt_ref, ""),
     output:
-        stats = temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.stats"),
+        stats=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.stats"),
         vcf=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf"),
         idx=temp("mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.idx"),
     params:
@@ -335,7 +338,7 @@ rule gatk_mutect2:
     benchmark:
         repeat(
             "mitochondrial/gatk_mutect2/{sample}_{type}_{mt_ref}.vcf.benchmark.tsv",
-            config.get("gatk_mutect2", {}).get("benchmark_repeats", 1)
+            config.get("gatk_mutect2", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_mutect2", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -363,8 +366,10 @@ rule gatk_mutect2:
         "--max-reads-per-alignment-start {params.max_reads_per_alignment_start} "
         "--max-mnp-distance 0) &> {log}"
 
-# Liftover the variant from the control region in the shifted VCF to the mt reference genome coordinaged 
+
+# Liftover the variant from the control region in the shifted VCF to the mt reference genome coordinaged
 # and merge with the non-control region chrM VCF
+
 
 rule gatk_lift_over_vcf:
     input:
@@ -382,7 +387,7 @@ rule gatk_lift_over_vcf:
     benchmark:
         repeat(
             "mitochondrial/gatk_lift_over_vcf/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_lift_over_vcf", {}).get("benchmark_repeats", 1)
+            config.get("gatk_lift_over_vcf", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_lift_over_vcf", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -420,7 +425,7 @@ rule gatk_merge_vcfs:
     benchmark:
         repeat(
             "mitochondrial/gatk_merge_vcfs/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_merge_vcfs", {}).get("benchmark_repeats", 1)
+            config.get("gatk_merge_vcfs", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_merge_vcfs", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -456,7 +461,7 @@ rule gatk_merge_stats:
     benchmark:
         repeat(
             "mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats.benchmark.tsv",
-            config.get("gatk_merge_stats", {}).get("benchmark_repeats", 1)
+            config.get("gatk_merge_stats", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_merge_stats", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -472,7 +477,7 @@ rule gatk_merge_stats:
     message:
         "{rule}: Merge thg mutect2 vcf stats files {input.shifted_stats} and {input.stats}"
     shell:
-        "(gatk --java-options '-Xmx3g' MergeMutectStats " 
+        "(gatk --java-options '-Xmx3g' MergeMutectStats "
         "--stats {input.shifted_stats} "
         "--stats {input.stats} "
         "-O {output.merged_stats}) &> {log}"
@@ -498,7 +503,7 @@ rule gatk_filter_mutect_calls_mt:
     benchmark:
         repeat(
             "mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1)
+            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_filter_mutect_calls_mt", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -530,7 +535,7 @@ rule gatk_filter_mutect_calls_mt:
 rule gatk_variant_filtration:
     input:
         vcf="mitochondrial/gatk_filter_mutect_calls_mt/{sample}_{type}.vcf",
-        blacklisted_sites=config.get("mt_reference", {}).get("blacklist", "")
+        blacklisted_sites=config.get("mt_reference", {}).get("blacklist", ""),
     output:
         filtered_vcf=temp("mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf"),
         idx=temp("mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf.idx"),
@@ -541,7 +546,7 @@ rule gatk_variant_filtration:
     benchmark:
         repeat(
             "mitochondrial/gatk_variant_filtration/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_variant_filtration", {}).get("benchmark_repeats", 1)
+            config.get("gatk_variant_filtration", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_variant_filtration", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -579,12 +584,14 @@ rule gatk_left_align_and_trim_variants:
     benchmark:
         repeat(
             "mitochondrial/gatk_left_align_and_trim_variants/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_left_align_and_trim_variants", {}).get("benchmark_repeats", 1)
+            config.get("gatk_left_align_and_trim_variants", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_left_align_and_trim_variants", {}).get("threads", config["default_resources"]["threads"])
     resources:
         mem_mb=config.get("gatk_left_align_and_trim_variants", {}).get("mem_mb", config["default_resources"]["mem_mb"]),
-        mem_per_cpu=config.get("gatk_left_align_and_trim_variants", {}).get("mem_per_cpu", config["default_resources"]["mem_per_cpu"]),
+        mem_per_cpu=config.get("gatk_left_align_and_trim_variants", {}).get(
+            "mem_per_cpu", config["default_resources"]["mem_per_cpu"]
+        ),
         partition=config.get("gatk_left_align_and_trim_variants", {}).get("partition", config["default_resources"]["partition"]),
         threads=config.get("gatk_left_align_and_trim_variants", {}).get("threads", config["default_resources"]["threads"]),
         time=config.get("gatk_left_align_and_trim_variants", {}).get("time", config["default_resources"]["time"]),
@@ -617,7 +624,7 @@ rule gatk_select_variants:
     benchmark:
         repeat(
             "mitochondrial/gatk_select_variants/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_select_variants", {}).get("benchmark_repeats", 1)
+            config.get("gatk_select_variants", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("gatk_select_variants", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -641,16 +648,17 @@ rule gatk_select_variants:
 
 # Filter comtamination using the gatk_filter_mutect_calls_mt rule again
 
+
 use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
     input:
         vcf="mitochondrial/gatk_select_variants/{sample}_{type}.vcf",
         ref=config.get("mt_reference", {}).get("mt", ""),
-        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats", 
+        mutect_stats="mitochondrial/gatk_merge_stats/{sample}_{type}.vcf.stats",
         contamination="mitochondrial/haplocheck/{sample}_{type}.contamination.txt",
     output:
         vcf=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf"),
         idx=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.idx"),
-        stats=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.filteringStats.tsv")
+        stats=temp("mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.filteringStats.tsv"),
     params:
         extra=config.get("gatk_filter_mutect_calls_mt", {}).get("extra", ""),
         max_alt_allele_count=config.get("gatk_filter_mutect_calls_mt", {}).get("max_alt_allele_count", 4),
@@ -662,7 +670,7 @@ use rule gatk_filter_mutect_calls_mt as gatk_filter_contamination with:
     benchmark:
         repeat(
             "mitochondrial/gatk_filter_contamination/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1)
+            config.get("gatk_filter_mutect_calls_mt", {}).get("benchmark_repeats", 1),
         )
     message:
         "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode with a contamination estimate"
@@ -679,5 +687,5 @@ use rule gatk_select_variants as gatk_select_variants_final with:
     benchmark:
         repeat(
             "mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf.benchmark.tsv",
-            config.get("gatk_select_variants_final", {}).get("benchmark_repeats", 1)
+            config.get("gatk_select_variants_final", {}).get("benchmark_repeats", 1),
         )

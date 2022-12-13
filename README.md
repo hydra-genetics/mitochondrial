@@ -82,7 +82,8 @@ The following output files should be targeted via another rule:
 
 | File | Description |
 |---|---|
-| `mitochondrial/gatk_split_multi_allelic_sites/{sample}_{type}.vcf` | mitochondrial `.vcf` from mutect2 |
+| `mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf` | mitochondrial `.vcf` from mutect2 |
+| `mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt` | mitochondrial coverage metrics `.txt` from CollectWgsMetrics |
 
 ## :judge: Rule Graph
 ![rule_graph](images/dag.svg)

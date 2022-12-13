@@ -8,7 +8,7 @@ rule bwa_mem_mito:
     input:
         reads=[
             "mitochondrial/gatk_sam_to_fastq/{sample}_{type}_1.fastq",
-            "mitochondrial/gatk_sam_to_fastq/{sample}_{type}_2.fastq",    
+            "mitochondrial/gatk_sam_to_fastq/{sample}_{type}_2.fastq",
         ],
         idx=lambda wildcards: [
             config.get("bwa_mem_mito", {}).get("amb", "").get(wildcards.mt_ref, ""),
@@ -16,8 +16,7 @@ rule bwa_mem_mito:
             config.get("bwa_mem_mito", {}).get("bwt", "").get(wildcards.mt_ref, ""),
             config.get("bwa_mem_mito", {}).get("pac", "").get(wildcards.mt_ref, ""),
             config.get("bwa_mem_mito", {}).get("sa", "").get(wildcards.mt_ref, ""),
-        ]
-
+        ],
     output:
         bam=temp("mitochondrial/bwa_mem_mito/{sample}_{type}_{mt_ref}.bam"),
     params:
@@ -28,7 +27,7 @@ rule bwa_mem_mito:
     benchmark:
         repeat(
             "mitochondrial/bwa_mem_mito/{sample}_{type}_{mt_ref}.output.benchmark.tsv",
-            config.get("bwa_mem_mito", {}).get("benchmark_repeats", 1)
+            config.get("bwa_mem_mito", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("bwa_mem_mito", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -45,4 +44,3 @@ rule bwa_mem_mito:
         "{rule}: Align chrM reads from {wildcards.sample}_{wildcards.type} to the {wildcards.mt_ref} reference"
     wrapper:
         "v1.3.1/bio/bwa/mem"
-

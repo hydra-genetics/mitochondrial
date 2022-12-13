@@ -18,7 +18,7 @@ rule haplocheck:
     benchmark:
         repeat(
             "mitochondrial/haplocheck/{sample}_{type}.output.benchmark.tsv",
-            config.get("haplocheck", {}).get("benchmark_repeats", 1)
+            config.get("haplocheck", {}).get("benchmark_repeats", 1),
         )
     threads: config.get("haplocheck", {}).get("threads", config["default_resources"]["threads"])
     resources:
@@ -35,6 +35,3 @@ rule haplocheck:
         "{rule}: Estimate contamination from {input.vcf} using haplocheck"
     shell:
         "haplocheck --raw --out {output.haplocheck_report} {input.vcf} &> {log}"
-
-
-

@@ -42,36 +42,35 @@ wildcard_constraints:
     sample="|".join(samples.index),
     type="N|T|R",
 
+
 def get_contamination_estimate(wildcards, haplocheck_report):
-    
-    df = pd.read_csv(haplocheck_report, sep='\t', index_col='Sample', dtype=str)
-    cont_est = df.loc['_'.join([wildcards.sample, wildcards.type]), 'Contamination Level']
-    
-    if cont_est == 'ND':
-        cont_est = '0'
-    
-    cont_est = cont_est.replace(',', '.') # deal with case where estimate has ',' as decimal point
+
+    df = pd.read_csv(haplocheck_report, sep="\t", index_col="Sample", dtype=str)
+    cont_est = df.loc["_".join([wildcards.sample, wildcards.type]), "Contamination Level"]
+
+    if cont_est == "ND":
+        cont_est = "0"
+
+    cont_est = cont_est.replace(",", ".")  # deal with case where estimate has ',' as decimal point
 
     return cont_est
 
 
 def compile_output_list(wildcards):
-    
+
     files = {
         "mitochondrial/gatk_select_variants_final": ["vcf"],
     }
 
     output_files = [
-        "%s/%s_%s.%s" % (prefix, sample, unit_type,  suffix)
+        "%s/%s_%s.%s" % (prefix, sample, unit_type, suffix)
         for prefix in files.keys()
         for sample in get_samples(samples)
         for unit_type in get_unit_types(units, sample)
         for suffix in files[prefix]
     ]
 
-    files =  {
-        "mitochondrial/gatk_collect_wgs_metrics": ["metrics.txt"]
-    }
+    files = {"mitochondrial/gatk_collect_wgs_metrics": ["metrics.txt"]}
 
     output_files += [
         "%s/%s_%s_mt.%s" % (prefix, sample, unit_type, suffix)
@@ -80,5 +79,5 @@ def compile_output_list(wildcards):
         for unit_type in get_unit_types(units, sample)
         for suffix in files[prefix]
     ]
-    
+
     return output_files
