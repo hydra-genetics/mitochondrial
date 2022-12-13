@@ -161,7 +161,7 @@ rule gatk_merge_bam_alignment:
 
         command=`gatk PrintReadsHeader -I {input.bam}  --verbosity 'ERROR' \
         -O /dev/stdout | grep 'PN:bwa' | cut -f5 | cut -f2- -d':'`
-        
+
         (gatk --java-options '-Xmx4g' MergeBamAlignment \
         -VALIDATION_STRINGENCY SILENT \
         -EXPECTED_ORIENTATIONS FR \
