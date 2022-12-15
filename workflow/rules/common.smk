@@ -11,6 +11,7 @@ from hydra_genetics.utils.resources import load_resources
 from hydra_genetics.utils.samples import *
 from hydra_genetics.utils.units import *
 
+
 min_version("6.8.0")
 
 ### Set and validate config file
@@ -31,7 +32,11 @@ validate(samples, schema="../schemas/samples.schema.yaml")
 
 ### Read and validate units file
 
-units = pandas.read_table(config["units"], dtype=str).set_index(["sample", "type", "flowcell", "lane", "barcode"], drop=False).sort_index()
+units = (
+    pandas.read_table(config["units"], dtype=str)
+    .set_index(["sample", "type", "flowcell", "lane", "barcode"], drop=False)
+    .sort_index()
+)
 validate(units, schema="../schemas/units.schema.yaml")
 
 ### Set wildcard constraints
@@ -42,9 +47,41 @@ wildcard_constraints:
     type="N|T|R",
 
 
+def get_contamination_estimate(wildcards, haplocheck_report):
+
+    df = pd.read_csv(haplocheck_report, sep="\t", index_col="Sample", dtype=str)
+    cont_est = df.loc["_".join([wildcards.sample, wildcards.type]), "Contamination Level"]
+
+    if cont_est == "ND":
+        cont_est = "0"
+
+    cont_est = cont_est.replace(",", ".")  # deal with case where estimate has ',' as decimal point
+
+    return cont_est
+
+
 def compile_output_list(wildcards):
-    return [
-        "mito_snv_indels/dummy/%s_%s.dummy.txt" % (sample, t)
+
+    files = {
+        "mitochondrial/gatk_select_variants_final": ["vcf"],
+    }
+
+    output_files = [
+        "%s/%s_%s.%s" % (prefix, sample, unit_type, suffix)
+        for prefix in files.keys()
         for sample in get_samples(samples)
-        for t in get_unit_types(units, sample)
+        for unit_type in get_unit_types(units, sample)
+        for suffix in files[prefix]
     ]
+
+    files = {"mitochondrial/gatk_collect_wgs_metrics": ["metrics.txt"]}
+
+    output_files += [
+        "%s/%s_%s_mt.%s" % (prefix, sample, unit_type, suffix)
+        for prefix in files.keys()
+        for sample in get_samples(samples)
+        for unit_type in get_unit_types(units, sample)
+        for suffix in files[prefix]
+    ]
+
+    return output_files

@@ -2,11 +2,11 @@ name: small integration test
 
 # Controls when the action will run.
 on:
-   # Triggers the workflow on push or pull request events but only for the master and develop branch
+   # Triggers the workflow on push or pull request events but only for the main and develop branch
   push:
     branches:
      - develop
-     - master
+     - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,7 +37,6 @@ jobs:
       - name: Integration test - small dataset
         working-directory: .tests/integration
         run: |
-          mamba install -c conda-forge -c bioconda snakemake
           snakemake -s ../../workflow/Snakefile -j 1 --use-conda --configfile config.yaml
   integration-small-singularity:
     name: integration small data set singularity

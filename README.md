@@ -1,20 +1,17 @@
-# :snake: hydra-genetics/mito_snv_indels
+# :snake: hydra-genetics/mitochondrial
 
 #### Snakemake module for performing Mitochondrial short variant discovery
 
-![Lint](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/lint.yaml/badge.svg?branch=develop)
-![Snakefmt](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/snakefmt.yaml/badge.svg?branch=develop)
-![snakemake dry run](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/snakemake-dry-run.yaml/badge.svg?branch=develop)
-![integration test](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/integration1.yaml/badge.svg?branch=develop)
-
-![pycodestyle](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/pycodestyl.yaml/badge.svg?branch=develop)
-![pytest](https://github.com/hydra-genetics/mito_snv_indels/actions/workflows/pytest.yaml/badge.svg?branch=develop)
+![Lint](https://github.com/hydra-genetics/mitochondrial/actions/workflows/lint.yaml/badge.svg?branch=develop)
+![Snakefmt](https://github.com/hydra-genetics/mitochondrial/actions/workflows/snakefmt.yaml/badge.svg?branch=develop)
+![snakemake dry run](https://github.com/hydra-genetics/mitochondrial/actions/workflows/snakemake-dry-run.yaml/badge.svg?branch=develop)
+![integration test](https://github.com/hydra-genetics/mitochondrial/actions/workflows/integration1.yaml/badge.svg?branch=develop)
 
 [![License: GPL-3](https://img.shields.io/badge/License-GPL3-yellow.svg)](https://opensource.org/licenses/gpl-3.0.html)
 
 ## :speech_balloon: Introduction
 
-The module consists of alignment  ....
+The module consists of rules to call mitochondrial variants from `.bam` files. Mitochondorial SNV and Indels are called using mutect2 following the GATK Best Practice Workflow for mitochondrial short variants.
 
 ## :heavy_exclamation_mark: Dependencies
 
@@ -30,8 +27,8 @@ In order to use this module, the following dependencies are required:
 
 ### Sample data
 
-Input data should be added to [`samples.tsv`](https://github.com/hydra-genetics/mito_snv_indels/blob/develop/config/samples.tsv)
-and [`units.tsv`](https://github.com/hydra-genetics/mito_snv_indels/blob/develop/config/units.tsv).
+Input data should be added to [`samples.tsv`](https://github.com/hydra-genetics/mitochondrial/blob/develop/config/samples.tsv)
+and [`units.tsv`](https://github.com/hydra-genetics/mitochondrial/blob/develop/config/units.tsv).
 The following information need to be added to these files:
 
 | Column Id | Description |
@@ -65,10 +62,10 @@ To use this module in your workflow, follow the description in the
 Add the module to your `Snakefile` like so:
 
 ```bash
-module prealignment:
+module mitochondrial:
     snakefile:
         github(
-            "mito_snv_indels",
+            "hydra-genetics/mitochondrial",
             path="workflow/Snakefile",
             tag="1.0.0",
         )
@@ -76,7 +73,7 @@ module prealignment:
         config
 
 
-use rule * from mito_snv_indels as mito_snv_indels_*
+use rule * from mitochondrial as mitochondrial_*
 ```
 
 ### Output files
@@ -85,6 +82,8 @@ The following output files should be targeted via another rule:
 
 | File | Description |
 |---|---|
-| `mito_snv_indels/PATH/FILE` | DESCRIPTION |
+| `mitochondrial/gatk_select_variants_final/{sample}_{type}.vcf` | mitochondrial `.vcf` from mutect2 |
+| `mitochondrial/gatk_collect_wgs_metrics/{sample}_{type}_mt.metrics.txt` | mitochondrial coverage metrics `.txt` from CollectWgsMetrics |
 
 ## :judge: Rule Graph
+![rule_graph](images/dag.svg)

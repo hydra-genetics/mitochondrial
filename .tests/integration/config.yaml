@@ -1,5 +1,95 @@
+---
+
 resources: "resources.yaml"
 samples: "samples.tsv"
 units: "units.tsv"
 
-default_container: "docker://hydragenetics/common:0.1.1"
+default_container: "docker://hydragenetics/common:0.1.9"
+
+
+mt_reference:
+  mt: "reference/Homo_sapiens_assembly38.chrM.fasta"
+  mt_shifted: "reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta"
+  blacklist: reference/blacklist_sites.hg38.chrM.bed
+
+bwa_mem_mito:
+  container: "docker://hydragenetics/bwa_mem:0.7.17"
+  extra: "-K 100000000 -v3 -Y"
+  amb:
+    mt: reference/Homo_sapiens_assembly38.chrM.fasta.amb
+    mt_shifted: reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta.amb
+  ann:
+    mt: reference/Homo_sapiens_assembly38.chrM.fasta.ann
+    mt_shifted: reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta.ann
+  bwt:
+    mt: reference/Homo_sapiens_assembly38.chrM.fasta.bwt
+    mt_shifted: reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta.bwt
+  pac:
+    mt: reference/Homo_sapiens_assembly38.chrM.fasta.pac
+    mt_shifted: reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta.pac
+  sa:
+    mt: reference/Homo_sapiens_assembly38.chrM.fasta.sa
+    mt_shifted: reference/Homo_sapiens_assembly38.chrM.shifted_by_8000_bases.fasta.sa
+
+gatk_collect_wgs_metrics:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  coverage_cap: 100000
+  read_length: 151
+
+gatk_filter_contamination:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_filter_mutect_calls_mt:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_left_align_and_trim_variants:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_lift_over_vcf:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  shift_back_chain: reference/ShiftBack.chain
+
+gatk_mark_duplicates:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_bam_alignment:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_vcfs:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_merge_stats:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"  
+
+gatk_mutect2:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  interval:
+    mt: reference/non_control_region.chrM.interval_list
+    mt_shifted: reference/control_region_shifted.chrM.interval_list
+  max_reads_per_alignment_start: 75
+
+gatk_print_reads:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+  interval: 'chrM'
+
+gatk_revert_sam:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_sam_to_fastq:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_select_variants:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_sort_sam:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_split_multi_allelic_sites:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+gatk_variant_filtration:
+  container: "docker://hydragenetics/gatk4:4.2.2.0"
+
+haplocheck:
+  container: "docker://hydragenetics/haplocheck:1.3.3"
+  
