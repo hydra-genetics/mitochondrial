@@ -34,4 +34,7 @@ rule haplocheck:
     message:
         "{rule}: Estimate contamination from {input.vcf} using haplocheck"
     shell:
-        "haplocheck --raw --out {output.haplocheck_report} {input.vcf} &> {log}"
+        "(haplocheck "
+        "--raw "
+        "--out {output.haplocheck_report} "
+        "{input.vcf}) &> {log}"

@@ -38,7 +38,7 @@ rule gatk_print_reads:
     message:
         "{rule}: Extract {params.interval} reads from {input.bam} using gatk PrintReads"
     shell:
-        "(gatk --java-options '-Xmx3g' PrintReads "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' PrintReads "
         "-I {input.bam} "
         "-L {params.interval} "
         "-O {output.bam} "
@@ -75,7 +75,7 @@ rule gatk_revert_sam:
     message:
         "{rule}: Revert {input.bam} to unmapped BAM using using the gatk4 wrapper of Picard's RevertSam "
     shell:
-        "(gatk --java-options '-Xmx3g' RevertSam "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' RevertSam "
         "--INPUT {input.bam} "
         "--OUTPUT_BY_READGROUP false "
         "--OUTPUT {output.bam} "
@@ -115,7 +115,7 @@ rule gatk_sam_to_fastq:
     message:
         "{rule}: Convert {input.bam} to fastq using the gatk4 wrapper of Picard's SamtoFastq"
     shell:
-        "(gatk --java-options '-Xmx5g' SamToFastq "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' SamToFastq "
         "-INPUT {input.bam} "
         "-F {output.fq1} "
         "-F2 {output.fq2} "
@@ -162,7 +162,7 @@ rule gatk_merge_bam_alignment:
         command=`gatk PrintReadsHeader -I {input.bam}  --verbosity 'ERROR' \
         -O /dev/stdout | grep 'PN:bwa' | cut -f5 | cut -f2- -d':'`
 
-        (gatk --java-options '-Xmx4g' MergeBamAlignment \
+        (gatk --java-options '-Xmx{resources.mem_mb}m' MergeBamAlignment \
         -VALIDATION_STRINGENCY SILENT \
         -EXPECTED_ORIENTATIONS FR \
         -ATTRIBUTES_TO_RETAIN X0 \
@@ -222,7 +222,7 @@ rule gatk_mark_duplicates:
     message:
         "{rule}: Mark duplicates in {input} using the gatk4 wrapper of Picard's MarkDuplicates"
     shell:
-        "(gatk --java-options '-Xmx4g' MarkDuplicates "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' MarkDuplicates "
         "-INPUT {input.bam} "
         "-OUTPUT {output.bam} "
         "-METRICS_FILE {output.metrics} "
@@ -262,7 +262,7 @@ rule gatk_sort_sam:
     message:
         "{rule}: Sort {input.bam} by coordinates using the gatk4 wrapper of Picard's SortSam"
     shell:
-        "(gatk --java-options '-Xmx4g' SortSam  "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' SortSam  "
         "-INPUT {input.bam} "
         "-OUTPUT {output.bam} "
         "-SORT_ORDER coordinate "
@@ -305,7 +305,7 @@ rule gatk_collect_wgs_metrics:
     message:
         "{rule}: Collect coverage and performance metrics for {input.bam} using the gatk4 wrapper of Picard's CollectWgsMetrics"
     shell:
-        "(gatk --java-options '-Xmx2g' CollectWgsMetrics "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' CollectWgsMetrics "
         "-INPUT {input.bam} "
         "-VALIDATION_STRINGENCY SILENT "
         "-REFERENCE_SEQUENCE {input.ref} "
@@ -354,7 +354,7 @@ rule gatk_mutect2:
     message:
         "{rule}: Call mitochondrial variants using Mutect2 on {input.bam}"
     shell:
-        "(gatk --java-options '-Xmx3g' Mutect2 "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' Mutect2 "
         "-R {input.ref} "
         "-I {input.bam} "
         "--read-filter MateOnSameContigOrNoMappedMateReadFilter "
@@ -403,7 +403,7 @@ rule gatk_lift_over_vcf:
     message:
         "{rule}: Lift over shifted {input.shifted_vcf} using chain file to the original unshifted fasta reference {input.ref}"
     shell:
-        "(gatk --java-options '-Xmx3g' LiftoverVcf "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' LiftoverVcf "
         "-I {input.shifted_vcf} "
         "-O {output.shifted_back_vcf} "
         "-R {input.ref} "
@@ -442,7 +442,7 @@ rule gatk_merge_vcfs:
         """"{rule}: Combine the VCF for the shifted back control region {input.shifted_vcf}
         with the VCF for the rest of chrM {input.vcf}"""
     shell:
-        "(gatk --java-options '-Xmx3g' MergeVcfs "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' MergeVcfs "
         "-I {input.shifted_vcf} "
         "-I {input.vcf} "
         "-O {output.vcf}) &> {log}"
@@ -477,7 +477,7 @@ rule gatk_merge_stats:
     message:
         "{rule}: Merge thg mutect2 vcf stats files {input.shifted_stats} and {input.stats}"
     shell:
-        "(gatk --java-options '-Xmx3g' MergeMutectStats "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' MergeMutectStats "
         "--stats {input.shifted_stats} "
         "--stats {input.stats} "
         "-O {output.merged_stats}) &> {log}"
@@ -519,7 +519,7 @@ rule gatk_filter_mutect_calls_mt:
     message:
         "{rule}: Filter {input.vcf} using FilterMutectCalls in mitochondria mode"
     shell:
-        "(gatk --java-options '-Xmx3g' FilterMutectCalls  "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' FilterMutectCalls  "
         "-V {input.vcf}  "
         "-R {input.ref}  "
         "-O {output.vcf}  "
@@ -562,7 +562,7 @@ rule gatk_variant_filtration:
     message:
         "{rule}: Mask blacklisted ChrM sites in {input.vcf} using GATK's VariantFiltration"
     shell:
-        "(gatk --java-options '-Xmx3g' VariantFiltration  "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' VariantFiltration  "
         "-V {input.vcf}  "
         "-O {output.filtered_vcf}  "
         "--apply-allele-specific-filters  "
@@ -602,7 +602,7 @@ rule gatk_left_align_and_trim_variants:
     message:
         "{rule}: Left align alleles and split multiallelic sites in {input.vcf}"
     shell:
-        "(gatk --java-options '-Xmx3g' LeftAlignAndTrimVariants "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' LeftAlignAndTrimVariants "
         "-R {input.ref} "
         "-V {input.vcf} "
         "-O {output.vcf} "
@@ -640,7 +640,7 @@ rule gatk_select_variants:
     message:
         "{rule}: Exclude filtered sites in {input.vcf}"
     shell:
-        "(gatk --java-options '-Xmx3g' SelectVariants "
+        "(gatk --java-options '-Xmx{resources.mem_mb}m' SelectVariants "
         "-V {input.vcf} "
         "-O {output.vcf} "
         "--exclude-filtered) &> {log}"
