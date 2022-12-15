@@ -31,7 +31,7 @@ jobs:
       - name: Install requirements.txt
         run: |
           pip install -r requirements.txt
-      - name: snakemake dry run
+      - name: snakemake linting
         working-directory: .tests/integration
         run: |
           snakemake --lint -s ../../workflow/Snakefile --configfiles config.yaml
