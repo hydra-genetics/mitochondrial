@@ -3,12 +3,15 @@ __copyright__ = "Copyright 2022, Padraic Corcoran"
 __email__ = "padraic.corcoran@scilifelab.uu.se"
 __license__ = "GPL-3"
 
+
 include: "rules/common.smk"
 include: "rules/haplocheck.smk"
 include: "rules/bwa.smk"
 include: "rules/gatk.smk"
+    
 
 report: "report/workflow.rst"
+    
 
 rule all:
     input:
