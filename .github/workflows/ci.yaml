@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - "workflow/**"
+      - ".tests/**"
+      - "requirements.txt"
+      - "requirements.test.txt"
+      - ".github/workflows/ci.yaml"
+      - ".pre-commit-config.yaml"
+      - "config/**"
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - "workflow/**"
+      - ".tests/**"
+      - "requirements.txt"
+      - "requirements.test.txt"
+      - ".github/workflows/ci.yaml"
+      - ".pre-commit-config.yaml"
+      - "config/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Stage 1 - fast checks run in parallel
+  lint:
+    name: Lint workflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Linting
+        working-directory: .tests/integration
+        run: snakemake --lint -n -s ../../workflow/Snakefile --configfile config.yaml
+
+  snakefmt:
+    name: Snakefmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_SNAKEMAKE_SNAKEFMT: true
+          OUTPUT_FOLDER: .github/linters/report
+
+  # Stage 2 - dry run after stage 1 passes
+  dry-run:
+    name: Snakemake dry run
+    needs: [lint, snakefmt]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Snakemake dry run
+        working-directory: .tests/integration
+        run: snakemake -n -s ../../workflow/Snakefile --configfile config.yaml
+
+  # Stage 3 - full integration test, push only
+  integration:
+    name: Integration test
+    needs: [dry-run]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+      - name: Install Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Cache SIMG images
+        id: cache-simg
+        uses: actions/cache@v4
+        with:
+          path: ~/singularity_containers
+          key: ${{ runner.os }}-simg-${{ hashFiles('config/**/*.yaml', '.tests/integration/*.yaml', 'workflow/Snakefile') }}
+          restore-keys: |
+            ${{ runner.os }}-simg
+      - name: Integration test - small dataset
+        working-directory: .tests/integration
+        run: |
+          mkdir -p ~/singularity_containers &&
+          snakemake -s ../../workflow/Snakefile -j 4 --show-failed-logs --configfile config.yaml --use-singularity --singularity-args " --cleanenv --bind /home/runner " --singularity-prefix ~/singularity_containers/
