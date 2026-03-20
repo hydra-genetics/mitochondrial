@@ -1,0 +1,25 @@
+default_install_hook_types: [pre-commit, pre-push]
+repos:
+  - repo: local
+    hooks:
+      - id: snakefmt
+        name: snakefmt
+        entry: snakefmt --check --config .github/linters/.snakefmt.toml
+        language: system
+        files: (\.smk$|(^|/)Snakefile$)
+
+      - id: snakemake-lint
+        name: Snakemake lint
+        entry: bash -c 'cd .tests/integration && snakemake --lint -n -s ../../workflow/Snakefile --configfile config.yaml'
+        language: system
+        pass_filenames: false
+        files: ^(workflow/|\.tests/integration/config\.yaml)$
+        stages: [pre-push]
+
+      - id: snakemake-dry-run
+        name: Snakemake dry run
+        entry: bash -c 'cd .tests/integration && snakemake -n -s ../../workflow/Snakefile --configfile config.yaml'
+        language: system
+        pass_filenames: false
+        files: ^(workflow/|\.tests/integration/config\.yaml)$
+        stages: [pre-push]
