@@ -1,3 +1,4 @@
+pulp<2.8
 drmaa==0.7.9
 hydra-genetics==0.15.0
 jinja2==3.0.1

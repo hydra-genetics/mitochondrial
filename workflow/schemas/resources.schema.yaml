@@ -401,5 +401,25 @@ properties:
         type: string
         description: max execution time
  
+  run_mitohifi:
+    type: object
+    description: resource definitions for run_mitohifi
+    properties:
+      mem_mb:
+        type: integer
+        description: max memory in MB to be available
+      mem_per_cpu:
+        type: integer
+        description: memory in MB used per cpu
+      partition:
+        type: string
+        description: partition to use on cluster
+      threads:
+        type: integer
+        description: number of threads to be available
+      time:
+        type: string
+        description: max execution time
+
 required:
   - default_resources

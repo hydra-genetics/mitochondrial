@@ -48,7 +48,6 @@ wildcard_constraints:
 
 
 def get_contamination_estimate(wildcards, haplocheck_report):
-
     df = pd.read_csv(haplocheck_report, sep="\t", index_col="Sample", dtype=str)
     cont_est = df.loc["_".join([wildcards.sample, wildcards.type]), "Contamination Level"]
 
@@ -61,7 +60,6 @@ def get_contamination_estimate(wildcards, haplocheck_report):
 
 
 def compile_output_list(wildcards):
-
     files = {
         "mitochondrial/gatk_select_variants_final": ["vcf"],
     }

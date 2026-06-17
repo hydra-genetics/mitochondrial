@@ -5,9 +5,10 @@ __license__ = "GPL-3"
 
 
 include: "rules/common.smk"
-include: "rules/haplocheck.smk"
 include: "rules/bwa.smk"
 include: "rules/gatk.smk"
+include: "rules/haplocheck.smk"
+include: "rules/mitohifi.smk"
 
 
 report: "report/workflow.rst"

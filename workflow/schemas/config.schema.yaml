@@ -380,6 +380,20 @@ properties:
         type: string
         description: blacklisted mitochondrial sites bed file
 
+  run_mitohifi:
+    type: object
+    description: parameters for run_mitohifi
+    properties:
+      benchmark_repeats:
+        type: integer
+        description: set number of times benchmark should be repeated
+      container:
+        type: string
+        description: name or path to docker/singularity container
+      extra:
+        type: string
+        description: parameters that should be forwarded
+
 
 required:
   - samples
